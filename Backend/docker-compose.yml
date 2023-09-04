@@ -1,12 +1,19 @@
-version: "3.5"
+version: '3'
 
 services:
-    message-services:
-        image: "golang:1.17-alpine"
-        volumes:
-            - '../Backend:/app'
-        ports:
-            - "8080:8080"
-        working_dir: '/app'
-        tty: true
-        command: "go run main.go"
+  message-service:
+    image: golang:latest
+    environment:
+      - GOPATH=/go
+    volumes:
+      - ../Backend:/go/src/app
+    ports:
+      - "8080:8080"
+    working_dir: /go/src/app
+    command: ["go", "run", "main.go"]
+
+  redis:
+    container_name: my-redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
