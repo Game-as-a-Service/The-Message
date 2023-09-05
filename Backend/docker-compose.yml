@@ -2,16 +2,12 @@ version: '3'
 
 services:
   message-service:
-    image: golang:latest
-    environment:
-      - GOPATH=/go
-    volumes:
-      - ../Backend:/go/src/app
+    build: .
+    container_name: message-service
+    image: the-message
     ports:
       - "8080:8080"
-    working_dir: /go/src/app
-    command: ["go", "run", "main.go"]
-
+    
   redis:
     container_name: my-redis
     image: redis:latest
