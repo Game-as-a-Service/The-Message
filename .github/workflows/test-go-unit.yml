@@ -1,0 +1,50 @@
+name: Go CI/CD with MySQL
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.21 # 選擇你想要的 Go 版本
+
+      - name: Install MySQL
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y mysql-server
+        env:
+          MYSQL_ROOT_PASSWORD: root_password # 設置 MySQL root 密碼
+
+      - name: Start MySQL Service
+        run: sudo service mysql start
+
+      - name: Set up database and tables
+        run: |
+          mysql -u root -p$MYSQL_ROOT_PASSWORD -e "CREATE DATABASE IF NOT EXISTS mydb;"
+          mysql -u root -p$MYSQL_ROOT_PASSWORD mydb < init.sql # 將初始化 SQL 檔案匯入
+
+      - name: Run Unit Tests
+        run: go test ./...
+
+      - name: E2E Tests with MySQL
+        run: go test ./e2e -tags e2e
+
+      - name: Build and Deploy
+        run: |
+          go build -o myapp
+          # 部署代碼到你的伺服器或雲端服務
+        env:
+          MYSQL_HOST: localhost
+          MYSQL_PORT: 3306
+          MYSQL_DATABASE: mydb
+          MYSQL_USER: root
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }} # 儲存在 GitHub Actions 的密碼
+
