@@ -1,28 +1,19 @@
 version: '3'
 
 services:
-  message-service:
-    build: .
-    container_name: message-service
-    image: the-message
-    ports:
-      - "8080:8080"
+  # message-service:
+  #   build: .
+  #   container_name: message-service
+  #   image: the-message
+  #   ports:
+  #     - "8080:8080"
 
-  message-db:
+  mysql:
     image: mysql:latest
     environment:
-      MYSQL_ROOT_PASSWORD: root_password # 設置 root 密碼
-      MYSQL_DATABASE: testdb # 創建測試用的資料庫
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "3306:3306" # 將 MySQL 連接埠映射到主機的 3306 連接埠
-    volumes:
-      - mysql_data:/var/lib/mysql # 持久化 MySQL 資料
-    
-  redis:
-    container_name: my-redis
-    image: redis:latest
-    ports:
-      - "6379:6379"
-
-volumes:
-  mysql_data: # 定義一個卷，用於持久化 MySQL 資料
+      - "3306:3306"

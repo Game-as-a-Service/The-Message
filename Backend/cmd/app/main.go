@@ -1,83 +1,88 @@
-// main.go
-
 package main
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/spf13/viper"
+
+	"github.com/gin-gonic/gin"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
-// var db *sql.DB
+type Pet struct {
+	gorm.Model
+	Id   int    `gorm:"primaryKey"`
+	Name string `json:"name"`
+}
 
-// func handleRequest(w http.ResponseWriter, r *http.Request) {
-// 	switch r.Method {
-// 	case http.MethodGet:
-// 		getTodos(w, r)
-// 	case http.MethodPost:
-// 		createTodo(w, r)
-// 	}
-// }
+type PetRepo struct {
+	db *sql.DB
+}
 
-// func getTodos(w http.ResponseWriter, r *http.Request) {
-// 	// 執行 SQL 查詢來檢索待辦事項列表
-// 	rows, err := db.Query("SELECT id, task FROM todos")
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
-// 	defer rows.Close()
+func NewPetRepository(db *sql.DB) *PetRepo {
+	return &PetRepo{
+		db: db,
+	}
+}
 
-// 	var todos []map[string]interface{}
-// 	for rows.Next() {
-// 		var id int
-// 		var task string
-// 		if err := rows.Scan(&id, &task); err != nil {
-// 			http.Error(w, err.Error(), http.StatusInternalServerError)
-// 			return
-// 		}
-// 		todo := map[string]interface{}{
-// 			"id":   id,
-// 			"task": task,
-// 		}
-// 		todos = append(todos, todo)
-// 	}
+func (p *PetRepo) GetPetById(ctx context.Context, id string) (*Pet, error) {
+	row := p.db.QueryRow("SELECT * FROM pet WHERE id = " + id)
+	var pet Pet
+	err := row.Scan(&pet.Id, &pet.Name)
+	if err != nil {
+		return nil, err
+	}
+	return &pet, nil
+}
 
-// 	// 回傳待辦事項列表
-// 	w.Header().Set("Content-Type", "application/json")
-// 	json.NewEncoder(w).Encode(todos)
-// }
-
-// func createTodo(w http.ResponseWriter, r *http.Request) {
-// 	// 解析請求 JSON
-// 	var input map[string]string
-// 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-// 		http.Error(w, err.Error(), http.StatusBadRequest)
-// 		return
-// 	}
-
-// 	// 執行 SQL 插入語句以新增待辦事項
-// 	result, err := db.Exec("INSERT INTO todos (task) VALUES (?)", input["task"])
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	// 回傳新增待辦事項的 ID
-// 	id, _ := result.LastInsertId()
-// 	response := map[string]interface{}{
-// 		"id": id,
-// 	}
-// 	w.Header().Set("Content-Type", "application/json")
-// 	json.NewEncoder(w).Encode(response)
-// }
+func init() {
+	viper.SetConfigFile(".env")
+	viper.SetConfigType("dotenv")
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatalf("Fatal error config file: %v\n", err)
+	}
+}
 
 func main() {
-	log.Println("Starting server...")
-	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		name := r.URL.Query().Get("name") // get URL query string
-		content := fmt.Sprintf("hello, %s", name)
-		fmt.Fprint(w, content) // write out content
+
+	dbHost := viper.GetString("DB_HOST")
+	dbDatabase := viper.GetString("DB_DATABASE")
+	dbUser := viper.GetString("DB_USER")
+	dbPwd := viper.GetString("DB_PASSWORD")
+	dbPort := viper.GetString("DB_PORT")
+
+	db, err := gorm.Open(mysql.Open(fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPwd, dbHost, dbPort, dbDatabase)), &gorm.Config{})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	db.Table("pet2").AutoMigrate(&Pet{})
+
+	engine := gin.Default()
+
+	engine.GET("/v2/pet/:petId", func(c *gin.Context) {
+		// petId := c.Param("petId")
+
+		pet := &Pet{}
+
+		db.Table("pet2").Create(&Pet{Id: 10, Name: "Jack"})
+
+		db.Table("pet2").Select("Id", "Name").First(pet)
+
+		fmt.Println(pet)
+
+		c.JSON(http.StatusOK, Pet{
+			Id:   pet.Id,
+			Name: pet.Name,
+		})
 	})
-	http.ListenAndServe(":8080", nil)
+
+	engine.Run(":8080")
 }

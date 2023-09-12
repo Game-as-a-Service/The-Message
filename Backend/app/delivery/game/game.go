@@ -1,5 +1,0 @@
-package game
-
-func GameInit() {
-
-}
