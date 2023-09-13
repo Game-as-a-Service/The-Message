@@ -2,33 +2,49 @@ package mysql
 
 import (
 	"context"
-	"database/sql"
-	"gorm.io/driver/mysql"
+	"time"
+
 	"gorm.io/gorm"
 )
 
 type Game struct {
 	gorm.Model
-	Id   int    `gorm:"primaryKey"`
-	Name string `json:"name"`
+	Id        int `gorm:"primaryKey;auto_increment"`
+	Name      string
+	CreatedAt time.Time `gorm:"autoCreateTime"`
+	UpdatedAt time.Time `gorm:"autoCreateTime"`
+	DeletedAt gorm.DeletedAt
 }
 
 type GameRepository struct {
-	db *sql.DB
+	db *gorm.DB
 }
 
-func NewGameRepositoryRepository(db *sql.DB) *GameRepository {
+func NewGameRepositoryRepository(db *gorm.DB) *GameRepository {
 	return &GameRepository{
 		db: db,
 	}
 }
 
-func (p *GameRepository) GetPetById(ctx context.Context, id string) (*Game, error) {
-	row := p.db.QueryRow("SELECT * FROM pet WHERE id = " + id)
-	var pet Game
-	err := row.Scan(&pet.Id, &pet.Name)
-	if err != nil {
-		return nil, err
+func ReturnAndErrorHandler(result *gorm.DB, game *Game) (*Game, error) {
+	if result.Error != nil {
+		return nil, result.Error
 	}
-	return &pet, nil
+
+	return game, nil
+}
+
+func (p *GameRepository) GetGameById(ctx context.Context, id int) (*Game, error) {
+	game := &Game{}
+
+	result := p.db.Table("games").Select("id", "Name").First(game, "id = ?", id)
+
+	return ReturnAndErrorHandler(result, game)
+}
+
+func (p *GameRepository) CreateGame(ctx context.Context, game *Game) (*Game, error) {
+
+	result := p.db.Table("games").Create(game)
+
+	return ReturnAndErrorHandler(result, game)
 }
