@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 
+	"strconv"
+
 	"github.com/spf13/viper"
 
 	"github.com/gin-gonic/gin"
@@ -50,7 +52,6 @@ func init() {
 }
 
 func main() {
-
 	dbHost := viper.GetString("DB_HOST")
 	dbDatabase := viper.GetString("DB_DATABASE")
 	dbUser := viper.GetString("DB_USER")
@@ -63,18 +64,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db.Table("pet2").AutoMigrate(&Pet{})
+	db.Table("pets").AutoMigrate(&Pet{})
 
 	engine := gin.Default()
 
 	engine.GET("/v2/pet/:petId", func(c *gin.Context) {
-		// petId := c.Param("petId")
+		petId, _ := strconv.Atoi(c.Param("petId"))
 
 		pet := &Pet{}
 
-		db.Table("pet2").Create(&Pet{Id: 10, Name: "Jack"})
+		db.Table("pets").Create(&Pet{Id: petId, Name: "Jack"})
 
-		db.Table("pet2").Select("Id", "Name").First(pet)
+		// db.Table("pets").Where("id = ?", petId).Select("Id", "Name").Find(pet)
+		db.Table("pets").Select("Id", "Name").First(pet, "id = ?", petId)
 
 		fmt.Println(pet)
 
