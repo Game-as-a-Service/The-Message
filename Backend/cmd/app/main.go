@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	viper.SetConfigFile(".env")
+	viper.SetConfigFile("../../.env")
 	viper.SetConfigType("dotenv")
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalf("Fatal error config file: %v\n", err)
