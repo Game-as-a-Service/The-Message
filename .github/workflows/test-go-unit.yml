@@ -7,8 +7,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - name: Change the location
-        run: cd Backend
+      - uses: actions/checkout@v3
 
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -16,7 +15,9 @@ jobs:
           go-version: '1.21'
 
       - name: Build
+        working-directory: ./Backend
         run: go build -v ./...
 
       - name: Test
+        working-directory: ./Backend
         run: go test -v ./...
