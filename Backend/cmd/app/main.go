@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	http "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
-	mysqlRepo "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
+	repository "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -35,12 +35,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	gameRepo := mysqlRepo.NewGameRepositoryRepository(db)
+	gameRepo := repository.NewGameRepository(db)
 
-	gameHandler := &http.Game{
-		GameRepo: gameRepo,
+	gameHandler := &http.GameHandler{
+		GameRepo: *gameRepo,
 	}
-	db.Table("games").AutoMigrate(&mysqlRepo.Game{})
+	db.Table("games").AutoMigrate(&repository.Game{})
 
 	engine := gin.Default()
 

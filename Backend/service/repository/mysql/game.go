@@ -20,18 +20,10 @@ type GameRepository struct {
 	db *gorm.DB
 }
 
-func NewGameRepositoryRepository(db *gorm.DB) *GameRepository {
+func NewGameRepository(db *gorm.DB) *GameRepository {
 	return &GameRepository{
 		db: db,
 	}
-}
-
-func ReturnAndErrorHandler(result *gorm.DB, game *Game) (*Game, error) {
-	if result.Error != nil {
-		return nil, result.Error
-	}
-
-	return game, nil
 }
 
 func (p *GameRepository) GetGameById(ctx context.Context, id int) (*Game, error) {
@@ -39,12 +31,20 @@ func (p *GameRepository) GetGameById(ctx context.Context, id int) (*Game, error)
 
 	result := p.db.Table("games").Select("id", "Name").First(game, "id = ?", id)
 
-	return ReturnAndErrorHandler(result, game)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return game, nil
 }
 
 func (p *GameRepository) CreateGame(ctx context.Context, game *Game) (*Game, error) {
 
 	result := p.db.Table("games").Create(game)
 
-	return ReturnAndErrorHandler(result, game)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return game, nil
 }

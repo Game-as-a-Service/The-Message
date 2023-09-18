@@ -47,8 +47,8 @@ func TestGetGameByIdE2E(t *testing.T) {
 
 	// Create a Gin router and HTTP server
 	router := gin.Default()
-	gameHandler := &httpHandler.Game{
-		GameRepo: mysqlRepo.NewGameRepositoryRepository(gdb),
+	gameHandler := &httpHandler.GameHandler{
+		GameRepo: *mysqlRepo.NewGameRepository(gdb),
 	}
 	router.GET("/api/v1/game/:gameId", gameHandler.GetGameById)
 
@@ -102,8 +102,8 @@ func TestCreateGameE2E(t *testing.T) {
 
 	// Create a Gin router and HTTP handler
 	router := gin.Default()
-	gameHandler := &httpHandler.Game{
-		GameRepo: mysqlRepo.NewGameRepositoryRepository(gdb),
+	gameHandler := &httpHandler.GameHandler{
+		GameRepo: *mysqlRepo.NewGameRepository(gdb),
 	}
 	router.POST("/api/v1/game", gameHandler.CreateGame) // Register the CreateGame route
 

@@ -4,15 +4,15 @@ import (
 	"net/http"
 	"strconv"
 
-	mysqlRepo "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
+	repository "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
 	"github.com/gin-gonic/gin"
 )
 
-type Game struct {
-	GameRepo *mysqlRepo.GameRepository
+type GameHandler struct {
+	GameRepo repository.GameRepository
 }
 
-func (g *Game) GetGameById(c *gin.Context) {
+func (g *GameHandler) GetGameById(c *gin.Context) {
 	gameId, _ := strconv.Atoi(c.Param("gameId"))
 
 	game, err := g.GameRepo.GetGameById(c, gameId)
@@ -22,14 +22,14 @@ func (g *Game) GetGameById(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, mysqlRepo.Game{
+	c.JSON(http.StatusOK, repository.Game{
 		Id:   game.Id,
 		Name: game.Name,
 	})
 }
 
-func (g *Game) CreateGame(c *gin.Context) {
-	game := &mysqlRepo.Game{
+func (g *GameHandler) CreateGame(c *gin.Context) {
+	game := &repository.Game{
 		Name: "Game",
 	}
 
@@ -40,7 +40,7 @@ func (g *Game) CreateGame(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, mysqlRepo.Game{
+	c.JSON(http.StatusOK, repository.Game{
 		Id:   game.Id,
 		Name: game.Name,
 	})
