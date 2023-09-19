@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"gorm.io/gorm"
 )
 
@@ -20,14 +21,14 @@ type GameRepository struct {
 	db *gorm.DB
 }
 
-func NewGameRepository(db *gorm.DB) *GameRepository {
+func NewGameRepository(db *gorm.DB) repository.GameRepository {
 	return &GameRepository{
 		db: db,
 	}
 }
 
-func (p *GameRepository) GetGameById(ctx context.Context, id int) (*Game, error) {
-	game := &Game{}
+func (p *GameRepository) GetGameById(ctx context.Context, id int) (*repository.Game, error) {
+	game := new(repository.Game)
 
 	result := p.db.Table("games").Select("id", "Name").First(game, "id = ?", id)
 
@@ -38,7 +39,7 @@ func (p *GameRepository) GetGameById(ctx context.Context, id int) (*Game, error)
 	return game, nil
 }
 
-func (p *GameRepository) CreateGame(ctx context.Context, game *Game) (*Game, error) {
+func (p *GameRepository) CreateGame(ctx context.Context, game *repository.Game) (*repository.Game, error) {
 
 	result := p.db.Table("games").Create(game)
 

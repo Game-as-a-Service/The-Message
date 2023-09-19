@@ -38,7 +38,7 @@ func main() {
 	gameRepo := repository.NewGameRepository(db)
 
 	gameHandler := &http.GameHandler{
-		GameRepo: *gameRepo,
+		GameRepo: gameRepo,
 	}
 	db.Table("games").AutoMigrate(&repository.Game{})
 

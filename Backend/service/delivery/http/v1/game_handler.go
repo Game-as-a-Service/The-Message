@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	repository "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
+	repository "github.com/Game-as-a-Service/The-Message/service/repository"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,9 +29,8 @@ func (g *GameHandler) GetGameById(c *gin.Context) {
 }
 
 func (g *GameHandler) CreateGame(c *gin.Context) {
-	game := &repository.Game{
-		Name: "Game",
-	}
+	game := new(repository.Game)
+	game.Name = "Game"
 
 	game, err := g.GameRepo.CreateGame(c, game)
 

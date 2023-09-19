@@ -1,4 +1,4 @@
-package main
+package http
 
 import (
 	// "bytes"
@@ -17,7 +17,6 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	httpHandler "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
 	mysqlRepo "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -47,8 +46,8 @@ func TestGetGameByIdE2E(t *testing.T) {
 
 	// Create a Gin router and HTTP server
 	router := gin.Default()
-	gameHandler := &httpHandler.GameHandler{
-		GameRepo: *mysqlRepo.NewGameRepository(gdb),
+	gameHandler := &GameHandler{
+		GameRepo: mysqlRepo.NewGameRepository(gdb),
 	}
 	router.GET("/api/v1/game/:gameId", gameHandler.GetGameById)
 
@@ -102,8 +101,8 @@ func TestCreateGameE2E(t *testing.T) {
 
 	// Create a Gin router and HTTP handler
 	router := gin.Default()
-	gameHandler := &httpHandler.GameHandler{
-		GameRepo: *mysqlRepo.NewGameRepository(gdb),
+	gameHandler := &GameHandler{
+		GameRepo: mysqlRepo.NewGameRepository(gdb),
 	}
 	router.POST("/api/v1/game", gameHandler.CreateGame) // Register the CreateGame route
 
