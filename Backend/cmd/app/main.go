@@ -6,8 +6,6 @@ import (
 
 	"os"
 
-	// "github.com/spf13/viper"
-
 	"github.com/gin-gonic/gin"
 
 	http "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
@@ -15,14 +13,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
-
-// func init() {
-// 	viper.SetConfigFile("../../.env")
-// 	viper.SetConfigType("dotenv")
-// 	if err := viper.ReadInConfig(); err != nil {
-// 		log.Fatalf("Fatal error config file: %v\n", err)
-// 	}
-// }
 
 func main() {
 	dbHost := os.Getenv("DB_HOST")
