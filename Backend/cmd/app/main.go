@@ -6,7 +6,7 @@ import (
 
 	"os"
 
-	"github.com/spf13/viper"
+	// "github.com/spf13/viper"
 
 	"github.com/gin-gonic/gin"
 
@@ -16,13 +16,13 @@ import (
 	"gorm.io/gorm"
 )
 
-func init() {
-	viper.SetConfigFile("../../.env")
-	viper.SetConfigType("dotenv")
-	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Fatal error config file: %v\n", err)
-	}
-}
+// func init() {
+// 	viper.SetConfigFile("../../.env")
+// 	viper.SetConfigType("dotenv")
+// 	if err := viper.ReadInConfig(); err != nil {
+// 		log.Fatalf("Fatal error config file: %v\n", err)
+// 	}
+// }
 
 func main() {
 	dbHost := os.Getenv("DB_HOST")
