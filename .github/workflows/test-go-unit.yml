@@ -1,6 +1,12 @@
-name: Go package
+name: Backend CI
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - Backend/**
+  pull_request:
+    paths:
+      - Backend/**
 
 jobs:
   build:

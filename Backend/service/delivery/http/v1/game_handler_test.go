@@ -40,7 +40,7 @@ func TestGetGameByIdE2E(t *testing.T) {
 	}
 
 	// Set up expected mock database queries and operations
-	mock.ExpectQuery(regexp.QuoteMeta("SELECT `id`,`name` FROM `games` WHERE id = ? AND `games`.`deleted_at` IS NULL ORDER BY `games`.`id` LIMIT 1")).
+	mock.ExpectQuery(regexp.QuoteMeta("SELECT `id`,`name` FROM `games` WHERE id = ? ORDER BY `games`.`id` LIMIT 1")).
 		WithArgs(1).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "name"}).AddRow(1, "Test Game"))
 
