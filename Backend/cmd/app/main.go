@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 
+	"os"
+
 	"github.com/spf13/viper"
 
 	"github.com/gin-gonic/gin"
@@ -23,11 +25,11 @@ func init() {
 }
 
 func main() {
-	dbHost := viper.GetString("DB_HOST")
-	dbDatabase := viper.GetString("DB_DATABASE")
-	dbUser := viper.GetString("DB_USER")
-	dbPwd := viper.GetString("DB_PASSWORD")
-	dbPort := viper.GetString("DB_PORT")
+	dbHost := os.Getenv("DB_HOST")
+	dbDatabase := os.Getenv("DB_DATABASE")
+	dbUser := os.Getenv("DB_USER")
+	dbPwd := os.Getenv("DB_PASSWORD")
+	dbPort := os.Getenv("DB_PORT")
 
 	db, err := gorm.Open(mysql.Open(fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPwd, dbHost, dbPort, dbDatabase)), &gorm.Config{})
 
