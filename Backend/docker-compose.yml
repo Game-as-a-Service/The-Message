@@ -1,15 +1,19 @@
 version: '3'
 
 services:
-  message-service:
-    build: .
-    container_name: message-service
-    image: the-message
+  # message-service:
+  #   build: .
+  #   container_name: message-service
+  #   image: the-message
+  #   ports:
+  #     - "8080:8080"
+
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "8080:8080"
-    
-  redis:
-    container_name: my-redis
-    image: redis:latest
-    ports:
-      - "6379:6379"
+      - "3306:3306"
