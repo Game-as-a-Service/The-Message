@@ -2,8 +2,11 @@ name: Vite React CI/CD
 
 on:
   push:
-    branches:
-      - main
+    paths:
+      - Frontend/**
+  pull_request:
+    paths:
+      - Frontend/**
 
 jobs:
   build:
