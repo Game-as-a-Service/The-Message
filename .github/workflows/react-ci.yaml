@@ -15,11 +15,14 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
+        working-directory: ./Frontend/the-message
         run: npm install
 
       - name: Build Vite app
+        working-directory: ./Frontend/the-message
         run: npm run build
 
       - name: Run Unit Tests
+        working-directory: ./Frontend/the-message
         run: npm test
 
