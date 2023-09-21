@@ -9,6 +9,11 @@ on:
       - Backend/**
 
 jobs:
+
+  check:
+    uses: ./.github/workflow/react-ci.yml
+    secrets: inherit
+
   build:
 
     runs-on: ubuntu-latest
