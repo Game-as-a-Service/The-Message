@@ -1,5 +1,5 @@
 import judgement from '../assets/images/judgement.jpg';
-import Entrance from '../components/page/entrance/entrance';
+import Entrance from '../page/entrance/entrance';
 import "../global.css";
 
 
