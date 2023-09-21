@@ -11,7 +11,7 @@ const Entrance = () => {
     return (
         <div className="absolute h-4/5 w-96 right-10">
             <div className="flex align-item justify-center w-full text-5xl text-white">
-                <p className="s">風</p>
+                <p className="s">風聲</p>
             </div>
             <div className="flex items-center justify-center mt-5">
                 <Input placeholder='輸入玩家姓名' errorBorderColor="red" focusBorderColor='gray.500' color='#fff'/>
