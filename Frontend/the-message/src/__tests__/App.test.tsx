@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
-import Card from "../components/items/card";
-import lineUpCardBack from "../../assets/images/backOfLineUpCard.jpg";
-import lurking from "../assets/images/lurking.jpg";
+import Card from "@/components/items/card";
+import lineUpCardBack from "@/assets/images/backOfLineUpCard.jpg";
+import lurking from "@/assets/images/lurking.jpg";
 import "@testing-library/jest-dom";
 import App from "../App";
 

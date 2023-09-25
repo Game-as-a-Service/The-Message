@@ -1,26 +1,56 @@
 import { atom } from 'recoil';
-import { CardInformation, CardSet } from './../types/cardTypes';
-import millitaryIntelligence from "../assets/images/millitaryIntelligence.jpg";
+import { CardInformation, CardSet } from '../types/cardTypes';
+import millitaryIntelligence from '../assets/images/millitaryIntelligence.jpg';
 
 const LineUpCards: CardInformation[] = [
-    {
-        cardId: "8b2ab4ca-615b-4479-a886-5d7f0624f853",
-        cardUrl: millitaryIntelligence,
-        cardName: "millitaryIntelligence",
-        cardState: "close",
-        cardCoordinate: { currentCoordinateX: 0 , currentCoordinateY: 0 },
-        canBeTurn: true
-    }
+  {
+    cardId: '8b2ab4ca-615b-4479-a886-5d7f0624f853',
+    cardUrl: millitaryIntelligence,
+    cardName: 'millitaryIntelligence',
+    cardState: 'close',
+    cardCoordinate: { currentCoordinateX: 0, currentCoordinateY: 0 },
+    canBeTurn: true,
+  },
+  {
+    cardId: '8b2ab4ca-615b-4479-a886-5d7f0624f853',
+    cardUrl: millitaryIntelligence,
+    cardName: 'millitaryIntelligence',
+    cardState: 'close',
+    cardCoordinate: { currentCoordinateX: 10, currentCoordinateY: 0 },
+    canBeTurn: true,
+  },
+  {
+    cardId: '8b2ab4ca-615b-4479-a886-5d7f0624f853',
+    cardUrl: millitaryIntelligence,
+    cardName: 'millitaryIntelligence',
+    cardState: 'close',
+    cardCoordinate: { currentCoordinateX: 20, currentCoordinateY: 0 },
+    canBeTurn: true,
+  },
+  {
+    cardId: '8b2ab4ca-615b-4479-a886-5d7f0624f853',
+    cardUrl: millitaryIntelligence,
+    cardName: 'millitaryIntelligence',
+    cardState: 'close',
+    cardCoordinate: { currentCoordinateX: 30, currentCoordinateY: 0 },
+    canBeTurn: true,
+  },
+  {
+    cardId: '8b2ab4ca-615b-4479-a886-5d7f0624f853',
+    cardUrl: millitaryIntelligence,
+    cardName: 'millitaryIntelligence',
+    cardState: 'close',
+    cardCoordinate: { currentCoordinateX: 40, currentCoordinateY: 0 },
+    canBeTurn: true,
+  },
 ];
 
-
 const LineUpCardSet: CardSet = {
-    CardInformation: LineUpCards,
-    cardKind: "LineUp"
-}
+  CardInformation: LineUpCards,
+  cardKind: 'LineUp',
+};
 
 export const LineUpCardsState = atom({
-    key: "lineUpCards",
-    default: LineUpCardSet,
-})
-
+  key: 'lineUpCards',
+  default: LineUpCardSet,
+});

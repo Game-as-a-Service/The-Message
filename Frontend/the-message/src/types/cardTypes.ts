@@ -2,15 +2,15 @@ export type CardInformation = {
     cardId: string,
     cardUrl: string,
     cardName: string,
-    cardState: "open" | "close",
+    cardState: 'open' | 'close',
     cardCoordinate: CardCoordinate,
     canBeTurn: boolean
 }
 
 export type CardSet = {
     CardInformation: CardInformation[],
-    cardKind: "LineUp" | "Functional"
-} 
+    cardKind: 'LineUp' | 'Functional'
+}
 
 export type CardCoordinate = {
     currentCoordinateX: number,

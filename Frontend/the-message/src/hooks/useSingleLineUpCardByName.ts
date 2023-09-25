@@ -1,15 +1,14 @@
-import { useRecoilState } from "recoil";
-import { LineUpCardsState }  from "../states/lineUpCardStates.ts";
-import { useMemo } from "react";
+import { useRecoilState } from 'recoil';
+import { useMemo } from 'react';
+import { LineUpCardsState } from '../states/lineUpCardStates.ts';
 
-export const useSingleLineUpCardByName = ( cardName:string ) => {
+export const useSingleLineUpCardByName = (cardName:string) => {
+  const [lineUpCards] = useRecoilState(LineUpCardsState);
 
-    const [ lineUpCards ] = useRecoilState(LineUpCardsState); 
+  const findSingleCard = useMemo(() => {
+    const targetCard = lineUpCards.CardInformation.find((card) => card.cardName === cardName);
+    return targetCard;
+  }, [cardName, lineUpCards.CardInformation]);
 
-    const findSingleCard = useMemo(() => {
-        const targetCard = lineUpCards.CardInformation.find(card => card.cardName === cardName);
-        return targetCard;
-    },[cardName, lineUpCards.CardInformation]);
-
-    return findSingleCard;
-}
+  return findSingleCard;
+};
