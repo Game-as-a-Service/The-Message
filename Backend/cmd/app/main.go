@@ -39,5 +39,7 @@ func main() {
 	engine.POST("/api/v1/game", gameHandler.CreateGame)
 	engine.GET("/api/v1/game/:gameId", gameHandler.GetGameById)
 
+	engine.Static("/swagger", "./web/swagger-ui")
+
 	engine.Run(":8080")
 }
