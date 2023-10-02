@@ -12,6 +12,8 @@ import (
 	repository "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
