@@ -49,7 +49,7 @@ func TestGetGameByIdE2E(t *testing.T) {
 	gameHandler := &GameHandler{
 		GameRepo: mysqlRepo.NewGameRepository(gdb),
 	}
-	router.GET("/api/v1/game/:gameId", gameHandler.GetGameById)
+	router.GET("/api/v1/game/:gameId", gameHandler.GetGame)
 
 	// Prepare an HTTP GET request
 	req, _ := http.NewRequest("GET", "/api/v1/game/1", nil)
@@ -119,6 +119,61 @@ func TestCreateGameE2E(t *testing.T) {
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("Expected status code 200, got %d. Response Body: %s", recorder.Code, recorder.Body.String())
 	}
+
+	// Check if the mock database expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("Unfulfilled expectations: %s", err)
+	}
+}
+
+func TestDeleteGameE2E(t *testing.T) {
+	// Create a virtual MySQL database connection
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("Error creating mock database: %v", err)
+	}
+	defer db.Close()
+
+	// Replace the GORM database connection with the virtual one
+	gdb, err := gorm.Open(mysql.New(mysql.Config{
+		Conn:                      db,
+		SkipInitializeWithVersion: true,
+	}), &gorm.Config{})
+	if err != nil {
+		t.Fatalf("Error opening GORM database: %v", err)
+	}
+
+	mock.ExpectBegin() // Expect a transaction Begin
+	mock.ExpectExec("INSERT INTO `games`").WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit() // Expect a transaction Commit
+
+	// Set up expected mock database queries and operations for DeleteGame
+	gameId := 1
+	mock.ExpectExec(regexp.QuoteMeta("DELETE FROM `games` WHERE `id` = ?")).
+		WithArgs(gameId).
+		WillReturnResult(sqlmock.NewResult(0, 1)) // Assumes the game with ID=1 is deleted successfully.
+
+	// Create a Gin router and HTTP handler
+	router := gin.Default()
+	gameHandler := &GameHandler{
+		GameRepo: mysqlRepo.NewGameRepository(gdb),
+	}
+	router.DELETE("/api/v1/game/:gameId", gameHandler.DeleteGame)
+
+	// Prepare an HTTP DELETE request
+	req, _ := http.NewRequest("DELETE", "/api/v1/game/1", nil)
+	recorder := httptest.NewRecorder()
+
+	// Execute the HTTP request
+	router.ServeHTTP(recorder, req)
+
+	// Check the HTTP response status code
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	// Optional: Check the HTTP response body
+	var response mysqlRepo.Game
+	err = json.Unmarshal(recorder.Body.Bytes(), &response)
+	assert.NoError(t, err)
 
 	// Check if the mock database expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
