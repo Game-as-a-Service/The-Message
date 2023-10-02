@@ -11,7 +11,7 @@ import (
 type Game struct {
 	gorm.Model
 	Id        int `gorm:"primaryKey;auto_increment"`
-	Name      string
+	Token     string
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoCreateTime"`
 	DeletedAt gorm.DeletedAt
@@ -30,7 +30,7 @@ func NewGameRepository(db *gorm.DB) repository.GameRepository {
 func (p *GameRepository) GetGameById(ctx context.Context, id int) (*repository.Game, error) {
 	game := new(repository.Game)
 
-	result := p.db.Table("games").Select("id", "Name").First(game, "id = ?", id)
+	result := p.db.Table("games").First(game, "id = ?", id)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -48,4 +48,16 @@ func (p *GameRepository) CreateGame(ctx context.Context, game *repository.Game) 
 	}
 
 	return game, nil
+}
+
+func (p *GameRepository) DeleteGame(ctx context.Context, id int) error {
+	game := new(repository.Game)
+
+	result := p.db.Table("games").Delete(game, "id = ?", id)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }
