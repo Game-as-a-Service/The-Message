@@ -31,7 +31,7 @@ const playerSection = () => {
           if ( !card ) { clearInterval(interval); return }
           const cardObj = getPersonFunctionalCard(card.cardId);
 
-          cardObj.move(cardsSectionOffset - singleCardOffset * count, -50);
+          cardObj.move(cardsSectionOffset - singleCardOffset * count, -10);
           setTimeout(() => cardObj.flip(), 400);
           count++;
       }, 200);

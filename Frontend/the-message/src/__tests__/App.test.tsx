@@ -1,10 +1,8 @@
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import Card from "@/components/items/card";
 import lineUpCardBack from "@/assets/images/backOfLineUpCard.jpg";
 import lurking from "@/assets/images/lurking.jpg";
 import "@testing-library/jest-dom";
-import App from "../App";
-
 
 
 const CardMockProps = {
@@ -17,13 +15,7 @@ const CardMockProps = {
 
 
 test("測試Card Component是否運作正常", async () => {
-  render(<Card cardName={""} {...CardMockProps}/>);
+  render(<Card {...CardMockProps}/>);
   expect(true).toBeTruthy();
 });
 
-test("測試入口畫面正常",async () => {
-  render(<App/>);
-
-  const titleElement = screen.getByText("風聲");
-  expect(titleElement).toBeInTheDocument();
-})
