@@ -12,5 +12,5 @@ type Player struct {
 }
 
 type PlayerRepository interface {
-	CreatePlayer(cxt context.Context, player *Player) (*Player, error)
+	CreatePlayer(ctx context.Context, player *Player) (*Player, error)
 }

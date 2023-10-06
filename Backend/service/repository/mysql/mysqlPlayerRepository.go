@@ -29,7 +29,7 @@ func NewPlayerRepository(db *gorm.DB) repository.PlayerRepository {
 	}
 }
 
-func (p *PlayerRepository) CreatePlayer(cxt context.Context, player *domain.Player) (*domain.Player, error) {
+func (p *PlayerRepository) CreatePlayer(ctx context.Context, player *domain.Player) (*domain.Player, error) {
 	err := p.db.Table("players").Create(player).Error
 	return player, err
 }

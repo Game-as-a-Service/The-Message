@@ -63,7 +63,7 @@ func (p *GameRepository) DeleteGame(ctx context.Context, id int) error {
 	return nil
 }
 
-func (g *GameRepository) GetGameWithPlayers(cxt context.Context, id int) (*repository.Game, error) {
+func (g *GameRepository) GetGameWithPlayers(ctx context.Context, id int) (*repository.Game, error) {
 	var game repository.Game
 	if err := g.db.Preload("Players").First(&game, id).Error; err != nil {
 		return nil, err

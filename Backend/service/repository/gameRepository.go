@@ -12,5 +12,5 @@ type GameRepository interface {
 	GetGameById(ctx context.Context, id int) (*Game, error)
 	CreateGame(ctx context.Context, game *Game) (*Game, error)
 	DeleteGame(ctx context.Context, id int) error
-	GetGameWithPlayers(cxt context.Context, id int) (*Game, error)
+	GetGameWithPlayers(ctx context.Context, id int) (*Game, error)
 }
