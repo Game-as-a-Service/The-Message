@@ -38,7 +38,7 @@ func main() {
 
 	engine := gin.Default()
 
-	engine.POST("/api/v1/game", gameHandler.CreateGame)
+	engine.POST("/api/v1/games", gameHandler.StartGame)
 	engine.GET("/api/v1/game/:gameId", gameHandler.GetGame)
 	engine.DELETE("/api/v1/game/:gameId", gameHandler.DeleteGame)
 

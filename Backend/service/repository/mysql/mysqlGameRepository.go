@@ -12,6 +12,7 @@ type Game struct {
 	gorm.Model
 	Id        int `gorm:"primaryKey;auto_increment"`
 	Token     string
+	Players   []Player
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoCreateTime"`
 	DeletedAt gorm.DeletedAt
@@ -60,4 +61,12 @@ func (p *GameRepository) DeleteGame(ctx context.Context, id int) error {
 	}
 
 	return nil
+}
+
+func (g *GameRepository) GetGameWithPlayers(cxt context.Context, id int) (*repository.Game, error) {
+	var game repository.Game
+	if err := g.db.Preload("Players").First(&game, id).Error; err != nil {
+		return nil, err
+	}
+	return &game, nil
 }
