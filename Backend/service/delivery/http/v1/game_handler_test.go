@@ -1,16 +1,17 @@
 package http
 
 import (
-	// "bytes"
-	// "encoding/json"
-	// "net/http"
-	// "net/http/httptest"
-
+	"bytes"
+	"context"
 	"encoding/json"
+	"github.com/Game-as-a-Service/The-Message/database"
+	"github.com/Game-as-a-Service/The-Message/service/repository"
+	"github.com/Game-as-a-Service/The-Message/service/service"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"regexp"
-	"strings"
 	"testing"
 
 	"gorm.io/driver/mysql"
@@ -21,6 +22,28 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
+
+var serverURL string
+var gameRepo repository.GameRepository
+
+func TestMain(m *testing.M) {
+	testDB := database.InitDB()
+
+	engine := gin.Default()
+
+	gameRepo = mysqlRepo.NewGameRepository(testDB)
+	playerRepo := mysqlRepo.NewPlayerRepository(testDB)
+	gameServ := service.NewGameService(gameRepo, playerRepo)
+
+	NewGameHandler(engine, gameServ)
+
+	server := httptest.NewServer(engine)
+	serverURL = server.URL
+
+	code := m.Run()
+	defer server.Close()
+	os.Exit(code)
+}
 
 func TestGetGameByIdE2E(t *testing.T) {
 	// Create a virtual MySQL database connection
@@ -77,53 +100,35 @@ func TestGetGameByIdE2E(t *testing.T) {
 	}
 }
 
-func TestCreateGameE2E(t *testing.T) {
-	// Create a virtual MySQL database connection
-	db, mock, err := sqlmock.New()
+func TestStartGameE2E(t *testing.T) {
+	players := []Player{
+		{ID: "6497f6f226b40d440b9a90cc", Name: "A"},
+		{ID: "6498112b26b40d440b9a90ce", Name: "B"},
+		{ID: "6499df157fed0c21a4fd0425", Name: "C"},
+	}
+	requestBody := Request{Players: players}
+
+	jsonBody, err := json.Marshal(requestBody)
 	if err != nil {
-		t.Fatalf("Error creating mock database: %v", err)
-	}
-	defer db.Close()
-
-	// Replace the GORM database connection with the virtual one
-	gdb, err := gorm.Open(mysql.New(mysql.Config{
-		Conn:                      db,
-		SkipInitializeWithVersion: true,
-	}), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("Error opening GORM database: %v", err)
+		t.Fatalf("Failed to marshal JSON: %v", err)
 	}
 
-	// Set up expected mock database queries and operations for CreateGame
-	mock.ExpectBegin() // Expect a transaction Begin
-	mock.ExpectExec("INSERT INTO `games`").WillReturnResult(sqlmock.NewResult(1, 1))
-	mock.ExpectCommit() // Expect a transaction Commit
+	api := "/api/v1/games"
+	resp := requestJson(t, api, jsonBody)
 
-	// Create a Gin router and HTTP handler
-	router := gin.Default()
-	gameHandler := &GameHandler{
-		GameRepo: mysqlRepo.NewGameRepository(gdb),
-	}
-	router.POST("/api/v1/game", gameHandler.CreateGame) // Register the CreateGame route
+	assert.Equal(t, 200, resp.StatusCode)
 
-	// Prepare an HTTP POST request to create a game
-	createGameRequest := `{"name": "Test Game"}`
-	req, _ := http.NewRequest("POST", "/api/v1/game", strings.NewReader(createGameRequest))
-	req.Header.Set("Content-Type", "application/json")
-	recorder := httptest.NewRecorder()
+	responseJson := responseJson(t, resp)
 
-	// Execute the HTTP request
-	router.ServeHTTP(recorder, req)
+	assert.NotNil(t, responseJson["Token"], "JSON response should contain a 'Token' field")
+	assert.NotNil(t, responseJson["Id"], "JSON response should contain a 'Id' field")
 
-	// Check the HTTP response status code
-	if recorder.Code != http.StatusOK {
-		t.Fatalf("Expected status code 200, got %d. Response Body: %s", recorder.Code, recorder.Body.String())
-	}
+	// 驗證Game內的玩家都持有identity
+	game, _ := gameRepo.GetGameWithPlayers(context.TODO(), int(responseJson["Id"].(float64)))
 
-	// Check if the mock database expectations were met
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("Unfulfilled expectations: %s", err)
-	}
+	assert.NotEmpty(t, game.Players[0].IdentityCard)
+	assert.NotEmpty(t, game.Players[1].IdentityCard)
+	assert.NotEmpty(t, game.Players[2].IdentityCard)
 }
 
 func TestDeleteGameE2E(t *testing.T) {
@@ -179,4 +184,39 @@ func TestDeleteGameE2E(t *testing.T) {
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("Unfulfilled expectations: %s", err)
 	}
+}
+
+// Helper functions
+type Player struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type Request struct {
+	Players []Player `json:"players"`
+}
+
+func responseJson(t *testing.T, resp *http.Response) map[string]interface{} {
+	var responseMap map[string]interface{}
+	err := json.NewDecoder(resp.Body).Decode(&responseMap)
+	if err != nil {
+		t.Fatalf("Failed to decode JSON: %v", err)
+	}
+	return responseMap
+}
+
+func requestJson(t *testing.T, api string, jsonBody []byte) *http.Response {
+	req, err := http.NewRequest(http.MethodPost, serverURL+api, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		t.Fatalf("Failed to send request: %v", err)
+	}
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return resp
 }
