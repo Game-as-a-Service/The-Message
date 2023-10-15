@@ -1,4 +1,6 @@
-package migrate
+//go:build migrate
+
+package main
 
 import (
 	"database/sql"
@@ -8,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func init() {
+func main() {
 	db := config.InitDB()
 	tableNames := GetTableNames(db)
 	TruncateTables(db, tableNames)
@@ -38,7 +40,7 @@ func GetTableNames(db *gorm.DB) []string {
 func TruncateTables(db *gorm.DB, tableNames []string) {
 	for _, tableName := range tableNames {
 		db.Exec(fmt.Sprintf("SET FOREIGN_KEY_CHECKS = 0"))
-		db.Exec(fmt.Sprintf("TRUNCATE TABLE `%s`", tableName))
+		db.Exec(fmt.Sprintf("DROP TABLE `%s`", tableName))
 		db.Exec(fmt.Sprintf("SET FOREIGN_KEY_CHECKS = 1"))
 	}
 	fmt.Println("All specified tables truncated successfully.")

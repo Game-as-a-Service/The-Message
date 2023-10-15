@@ -1,4 +1,6 @@
-package migrate
+//go:build migrate
+
+package main
 
 import (
 	"github.com/Game-as-a-Service/The-Message/config"
@@ -8,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func init() {
+func main() {
 	db := config.InitDB()
 	MigrationMysql(db)
 }
