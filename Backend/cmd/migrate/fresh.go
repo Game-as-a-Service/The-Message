@@ -1,14 +1,14 @@
-package main
+package migrate
 
 import (
 	"database/sql"
 	"fmt"
-	"github.com/Game-as-a-Service/The-Message/database"
+	"github.com/Game-as-a-Service/The-Message/config"
 	"gorm.io/gorm"
 )
 
-func main() {
-	db := database.InitDB()
+func init() {
+	db := config.InitDB()
 	tableNames := GetTableNames(db)
 	TruncateTables(db, tableNames)
 }

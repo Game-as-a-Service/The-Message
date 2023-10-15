@@ -1,14 +1,14 @@
-package main
+package migrate
 
 import (
-	"github.com/Game-as-a-Service/The-Message/database"
+	"github.com/Game-as-a-Service/The-Message/config"
 	domain "github.com/Game-as-a-Service/The-Message/service/repository"
 	repository "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
 	"gorm.io/gorm"
 )
 
-func main() {
-	db := database.InitDB()
+func init() {
+	db := config.InitDB()
 	MigrationMysql(db)
 }
 

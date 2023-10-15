@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/Game-as-a-Service/The-Message/database"
+	"github.com/Game-as-a-Service/The-Message/config"
 	handler "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
 	repository "github.com/Game-as-a-Service/The-Message/service/repository"
 	mysqlRepo "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
@@ -22,7 +22,7 @@ var serverURL string
 var gameRepo repository.GameRepository
 
 func TestMain(m *testing.M) {
-	testDB := database.InitDB()
+	testDB := config.InitDB()
 
 	engine := gin.Default()
 
