@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	_ "github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
@@ -15,11 +16,11 @@ func InitDB() *gorm.DB {
 	dbPwd := os.Getenv("DB_PASSWORD")
 	dbPort := os.Getenv("DB_PORT")
 
-	var err error
-
-	db, err := gorm.Open(mysql.Open(GetDSN(dbUser, dbPwd, dbHost, dbPort, dbDatabase)), &gorm.Config{})
+	DSN := GetDSN(dbUser, dbPwd, dbHost, dbPort, dbDatabase)
+	db, err := gorm.Open(mysql.Open(DSN), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Cannot connect to database: %v", err)
+		return nil
 	}
 	return db
 }

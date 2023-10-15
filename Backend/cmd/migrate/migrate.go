@@ -4,6 +4,7 @@ import (
 	"github.com/Game-as-a-Service/The-Message/config"
 	domain "github.com/Game-as-a-Service/The-Message/service/repository"
 	repository "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
+	_ "github.com/joho/godotenv/autoload"
 	"gorm.io/gorm"
 )
 

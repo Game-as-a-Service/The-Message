@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/Game-as-a-Service/The-Message/config"
+	_ "github.com/joho/godotenv/autoload"
 	"gorm.io/gorm"
 )
 
