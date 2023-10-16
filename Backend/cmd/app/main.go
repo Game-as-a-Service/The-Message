@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Game-as-a-Service/The-Message/database"
+	"github.com/Game-as-a-Service/The-Message/config"
 	"github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"
 
@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	db := database.InitDB()
+	db := config.InitDB()
 
 	engine := gin.Default()
 

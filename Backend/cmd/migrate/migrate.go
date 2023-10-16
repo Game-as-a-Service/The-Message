@@ -1,14 +1,17 @@
+//go:build migrate
+
 package main
 
 import (
-	"github.com/Game-as-a-Service/The-Message/database"
+	"github.com/Game-as-a-Service/The-Message/config"
 	domain "github.com/Game-as-a-Service/The-Message/service/repository"
 	repository "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
+	_ "github.com/joho/godotenv/autoload"
 	"gorm.io/gorm"
 )
 
 func main() {
-	db := database.InitDB()
+	db := config.InitDB()
 	MigrationMysql(db)
 }
 
