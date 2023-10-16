@@ -2,10 +2,10 @@ package mysql
 
 import (
 	"context"
-	domain "github.com/Game-as-a-Service/The-Message/service/repository"
-	repository "github.com/Game-as-a-Service/The-Message/service/repository"
-	"gorm.io/gorm"
 	"time"
+
+	"github.com/Game-as-a-Service/The-Message/domain"
+	"gorm.io/gorm"
 )
 
 type Player struct {
@@ -23,7 +23,7 @@ type PlayerRepository struct {
 	db *gorm.DB
 }
 
-func NewPlayerRepository(db *gorm.DB) repository.PlayerRepository {
+func NewPlayerRepository(db *gorm.DB) domain.PlayerRepository {
 	return &PlayerRepository{
 		db: db,
 	}

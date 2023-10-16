@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/Game-as-a-Service/The-Message/service/repository"
+	"github.com/Game-as-a-Service/The-Message/domain"
 	"gorm.io/gorm"
 )
 
@@ -22,14 +22,14 @@ type GameRepository struct {
 	db *gorm.DB
 }
 
-func NewGameRepository(db *gorm.DB) repository.GameRepository {
+func NewGameRepository(db *gorm.DB) domain.GameRepository {
 	return &GameRepository{
 		db: db,
 	}
 }
 
-func (p *GameRepository) GetGameById(ctx context.Context, id int) (*repository.Game, error) {
-	game := new(repository.Game)
+func (p *GameRepository) GetGameById(ctx context.Context, id int) (*domain.Game, error) {
+	game := new(domain.Game)
 
 	result := p.db.Table("games").First(game, "id = ?", id)
 
@@ -40,7 +40,7 @@ func (p *GameRepository) GetGameById(ctx context.Context, id int) (*repository.G
 	return game, nil
 }
 
-func (p *GameRepository) CreateGame(ctx context.Context, game *repository.Game) (*repository.Game, error) {
+func (p *GameRepository) CreateGame(ctx context.Context, game *domain.Game) (*domain.Game, error) {
 
 	result := p.db.Table("games").Create(game)
 
@@ -52,7 +52,7 @@ func (p *GameRepository) CreateGame(ctx context.Context, game *repository.Game) 
 }
 
 func (p *GameRepository) DeleteGame(ctx context.Context, id int) error {
-	game := new(repository.Game)
+	game := new(domain.Game)
 
 	result := p.db.Table("games").Delete(game, "id = ?", id)
 
@@ -63,8 +63,8 @@ func (p *GameRepository) DeleteGame(ctx context.Context, id int) error {
 	return nil
 }
 
-func (g *GameRepository) GetGameWithPlayers(ctx context.Context, id int) (*repository.Game, error) {
-	var game repository.Game
+func (g *GameRepository) GetGameWithPlayers(ctx context.Context, id int) (*domain.Game, error) {
+	var game domain.Game
 	if err := g.db.Preload("Players").First(&game, id).Error; err != nil {
 		return nil, err
 	}

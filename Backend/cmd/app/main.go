@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/Game-as-a-Service/The-Message/config"
-	"github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"
 
 	http "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
@@ -17,9 +16,9 @@ func main() {
 
 	gameRepo := repository.NewGameRepository(db)
 	playerRepo := repository.NewPlayerRepository(db)
-	gameServ := service.NewGameService(gameRepo, playerRepo)
+	// gameServ := service.NewGameService(gameRepo, playerRepo)
 
-	http.NewGameHandler(engine, gameServ)
+	http.NewGameHandler(engine, gameRepo, playerRepo)
 
 	engine.Run(":8080")
 }
