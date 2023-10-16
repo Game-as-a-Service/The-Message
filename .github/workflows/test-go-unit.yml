@@ -5,7 +5,7 @@ on:
     paths:
       - Backend/**
       - .github/workflows/test-go-unit.yml
-  pull_request:
+  pull_request_target:
     paths:
       - Backend/**
       - .github/workflows/test-go-unit.yml
@@ -13,15 +13,15 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     services:
       mysql:
-        image: mysql:latest
+        image: mysql:8.1.0
         env:
           MYSQL_ROOT_PASSWORD: ${{ secrets.DB_ROOT_PASSWORD }}
-          MYSQL_DATABASE: ${{ secrets.DB_DATABASE }}
-          MYSQL_USER: ${{ secrets.DB_USER }}
+          MYSQL_DATABASE: test
+          MYSQL_USER: user
           MYSQL_PASSWORD: ${{ secrets.DB_PASSWORD }}
         ports:
           - "3306:3306"
