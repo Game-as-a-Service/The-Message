@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/Game-as-a-Service/The-Message/config"
-	"github.com/Game-as-a-Service/The-Message/domain"
 	handler "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
 	mysqlRepo "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
 	"github.com/gin-gonic/gin"
@@ -19,7 +18,7 @@ import (
 )
 
 var serverURL string
-var gameRepo domain.GameRepository
+var gameRepo *mysqlRepo.GameRepository
 
 func TestMain(m *testing.M) {
 	testDB := config.InitTestDB()
@@ -28,7 +27,6 @@ func TestMain(m *testing.M) {
 
 	gameRepo = mysqlRepo.NewGameRepository(testDB)
 	playerRepo := mysqlRepo.NewPlayerRepository(testDB)
-	// gameServ := service.NewGameService(gameRepo, playerRepo)
 
 	handler.NewGameHandler(engine, gameRepo, playerRepo)
 

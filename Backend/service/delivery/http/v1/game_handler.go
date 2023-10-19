@@ -6,18 +6,19 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Game-as-a-Service/The-Message/domain"
+	"github.com/Game-as-a-Service/The-Message/service/repository"
+	mysqlRepo "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
 	"github.com/Game-as-a-Service/The-Message/service/request"
 	service "github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"
 )
 
 type GameHandler struct {
-	GameRepo   domain.GameRepository
-	PlayerRepo domain.PlayerRepository
+	GameRepo   repository.GameRepository
+	PlayerRepo repository.PlayerRepository
 }
 
-func NewGameHandler(engine *gin.Engine, gameRepo domain.GameRepository, playerRepo domain.PlayerRepository) *GameHandler {
+func NewGameHandler(engine *gin.Engine, gameRepo *mysqlRepo.GameRepository, playerRepo *mysqlRepo.PlayerRepository) *GameHandler {
 	handler := &GameHandler{
 		GameRepo:   gameRepo,
 		PlayerRepo: playerRepo,
@@ -37,9 +38,9 @@ func (g *GameHandler) GetGame(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, domain.Game{
-		Id:    game.Id,
-		Token: game.Token,
+	c.JSON(http.StatusOK, gin.H{
+		"Id":    game.Id,
+		"Token": game.Token,
 	})
 }
 
@@ -51,7 +52,7 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		return
 	}
 
-	game := new(domain.Game)
+	game := new(repository.Game)
 	jwtToken := "the-message" // 先亂寫Token
 	jwtBytes := []byte(jwtToken)
 	hash := sha256.Sum256(jwtBytes)
@@ -64,7 +65,7 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 	identityCards := service.InitIdentityCards(len(req.Players))
 
 	for i, reqPlayer := range req.Players {
-		player := new(domain.Player)
+		player := new(repository.Player)
 		player.Name = reqPlayer.Name
 		player.GameId = game.Id
 		player.IdentityCard = identityCards[i]
@@ -76,9 +77,9 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, domain.Game{
-		Id:    game.Id,
-		Token: game.Token,
+	c.JSON(http.StatusOK, gin.H{
+		"Id":    game.Id,
+		"Token": game.Token,
 	})
 }
 

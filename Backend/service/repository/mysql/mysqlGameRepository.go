@@ -2,34 +2,23 @@ package mysql
 
 import (
 	"context"
-	"time"
 
-	"github.com/Game-as-a-Service/The-Message/domain"
+	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"gorm.io/gorm"
 )
-
-type Game struct {
-	gorm.Model
-	Id        int `gorm:"primaryKey;auto_increment"`
-	Token     string
-	Players   []Player
-	CreatedAt time.Time `gorm:"autoCreateTime"`
-	UpdatedAt time.Time `gorm:"autoCreateTime"`
-	DeletedAt gorm.DeletedAt
-}
 
 type GameRepository struct {
 	db *gorm.DB
 }
 
-func NewGameRepository(db *gorm.DB) domain.GameRepository {
+func NewGameRepository(db *gorm.DB) *GameRepository {
 	return &GameRepository{
 		db: db,
 	}
 }
 
-func (p *GameRepository) GetGameById(ctx context.Context, id int) (*domain.Game, error) {
-	game := new(domain.Game)
+func (p *GameRepository) GetGameById(ctx context.Context, id int) (*repository.Game, error) {
+	game := new(repository.Game)
 
 	result := p.db.Table("games").First(game, "id = ?", id)
 
@@ -40,7 +29,7 @@ func (p *GameRepository) GetGameById(ctx context.Context, id int) (*domain.Game,
 	return game, nil
 }
 
-func (p *GameRepository) CreateGame(ctx context.Context, game *domain.Game) (*domain.Game, error) {
+func (p *GameRepository) CreateGame(ctx context.Context, game *repository.Game) (*repository.Game, error) {
 
 	result := p.db.Table("games").Create(game)
 
@@ -52,7 +41,7 @@ func (p *GameRepository) CreateGame(ctx context.Context, game *domain.Game) (*do
 }
 
 func (p *GameRepository) DeleteGame(ctx context.Context, id int) error {
-	game := new(domain.Game)
+	game := new(repository.Game)
 
 	result := p.db.Table("games").Delete(game, "id = ?", id)
 
@@ -63,8 +52,8 @@ func (p *GameRepository) DeleteGame(ctx context.Context, id int) error {
 	return nil
 }
 
-func (g *GameRepository) GetGameWithPlayers(ctx context.Context, id int) (*domain.Game, error) {
-	var game domain.Game
+func (g *GameRepository) GetGameWithPlayers(ctx context.Context, id int) (*repository.Game, error) {
+	var game repository.Game
 	if err := g.db.Preload("Players").First(&game, id).Error; err != nil {
 		return nil, err
 	}

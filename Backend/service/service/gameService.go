@@ -3,20 +3,13 @@ package service
 import (
 	"math/rand"
 
-	"github.com/Game-as-a-Service/The-Message/domain"
 	"github.com/Game-as-a-Service/The-Message/enums"
+	"github.com/Game-as-a-Service/The-Message/service/repository"
 )
 
 type GameService struct {
-	GameRepo   domain.GameRepository
-	PlayerRepo domain.PlayerRepository
-}
-
-func NewGameService(gameRepo domain.GameRepository, playerRepo domain.PlayerRepository) *GameService {
-	return &GameService{
-		GameRepo:   gameRepo,
-		PlayerRepo: playerRepo,
-	}
+	GameRepo   repository.GameRepository
+	PlayerRepo repository.PlayerRepository
 }
 
 func InitIdentityCards(count int) []string {

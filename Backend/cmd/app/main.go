@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	http "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
-	repository "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
+	mysqlRepo "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -14,9 +14,8 @@ func main() {
 
 	engine := gin.Default()
 
-	gameRepo := repository.NewGameRepository(db)
-	playerRepo := repository.NewPlayerRepository(db)
-	// gameServ := service.NewGameService(gameRepo, playerRepo)
+	gameRepo := mysqlRepo.NewGameRepository(db)
+	playerRepo := mysqlRepo.NewPlayerRepository(db)
 
 	http.NewGameHandler(engine, gameRepo, playerRepo)
 
