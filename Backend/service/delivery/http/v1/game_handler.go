@@ -1,25 +1,27 @@
 package http
 
 import (
-	"github.com/Game-as-a-Service/The-Message/service/request"
-	"github.com/Game-as-a-Service/The-Message/service/service"
+	"crypto/sha256"
+	"encoding/hex"
 	"net/http"
 	"strconv"
 
-	repository "github.com/Game-as-a-Service/The-Message/service/repository"
+	"github.com/Game-as-a-Service/The-Message/service/repository"
+	mysqlRepo "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
+	"github.com/Game-as-a-Service/The-Message/service/request"
+	service "github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"
 )
 
 type GameHandler struct {
-	GameRepo repository.GameRepository
-	GameServ *service.GameService
+	GameRepo   repository.GameRepository
+	PlayerRepo repository.PlayerRepository
 }
 
-func NewGameHandler(engine *gin.Engine, gameServ *service.GameService) *GameHandler {
-	gameRepo := gameServ.GameRepo
+func NewGameHandler(engine *gin.Engine, gameRepo *mysqlRepo.GameRepository, playerRepo *mysqlRepo.PlayerRepository) *GameHandler {
 	handler := &GameHandler{
-		GameRepo: gameRepo,
-		GameServ: gameServ,
+		GameRepo:   gameRepo,
+		PlayerRepo: playerRepo,
 	}
 	engine.POST("/api/v1/games", handler.StartGame)
 	engine.Static("/swagger", "./web/swagger-ui")
@@ -36,29 +38,48 @@ func (g *GameHandler) GetGame(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, repository.Game{
-		Id:    game.Id,
-		Token: game.Token,
+	c.JSON(http.StatusOK, gin.H{
+		"Id":    game.Id,
+		"Token": game.Token,
 	})
 }
 
 func (g *GameHandler) StartGame(c *gin.Context) {
 	var req request.CreateGameRequest
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	game, err := g.GameServ.StartGame(c, req)
+	game := new(repository.Game)
+	jwtToken := "the-message" // 先亂寫Token
+	jwtBytes := []byte(jwtToken)
+	hash := sha256.Sum256(jwtBytes)
+	hashString := hex.EncodeToString(hash[:])
+	game.Token = hashString
+
+	game, err := g.GameRepo.CreateGame(c, game)
+
+	// 建立身份牌牌堆
+	identityCards := service.InitIdentityCards(len(req.Players))
+
+	for i, reqPlayer := range req.Players {
+		player := new(repository.Player)
+		player.Name = reqPlayer.Name
+		player.GameId = game.Id
+		player.IdentityCard = identityCards[i]
+		_, err = g.PlayerRepo.CreatePlayer(c, player)
+	}
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, repository.Game{
-		Id:    game.Id,
-		Token: game.Token,
+	c.JSON(http.StatusOK, gin.H{
+		"Id":    game.Id,
+		"Token": game.Token,
 	})
 }
 

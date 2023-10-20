@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "0e3ed1b5-b5f9-47bf-9d7a-afd00969ba0d",
+		"_postman_id": "ae98b73f-44dc-4aa3-8288-1c9e7ece3b0a",
 		"name": "The-Message",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "11538572"
@@ -15,14 +15,7 @@
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {\r",
 							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Check the return and whether feature run successfu\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"\r",
-							"    pm.expect(jsonData.Token).to.eql(\"Game\");\r",
-							"});\r",
-							""
+							"});"
 						],
 						"type": "text/javascript"
 					}
@@ -31,8 +24,17 @@
 			"request": {
 				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"players\": [{\n      \"id\": \"6497f6f226b40d440b9a90cc\",\n      \"name\": \"A\"\n   }, {\n      \"id\": \"6498112b26b40d440b9a90ce\",\n      \"name\": \"B\"\n   }, {\n      \"id\": \"6499df157fed0c21a4fd0425\",\n      \"name\": \"C\"\n   }]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": "localhost:8080/api/v1/game",
+					"raw": "localhost:8080/api/v1/games",
 					"host": [
 						"localhost"
 					],
@@ -40,101 +42,7 @@
 					"path": [
 						"api",
 						"v1",
-						"game"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GetGame",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Check the return and whether feature run successfu\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"\r",
-							"    pm.expect(jsonData.Token).to.eql(\"Game\");\r",
-							"});\r",
-							""
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "X-User-Key",
-						"value": "1",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "localhost:8080/api/v1/game/1",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"v1",
-						"game",
-						"1"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "DeleteGame",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Check the return and whether feature run successfu\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"\r",
-							"    pm.expect(jsonData.message).to.eql(\"Game deleted\");\r",
-							"});\r",
-							""
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "X-User-Key",
-						"value": "1",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "localhost:8080/api/v1/game/1",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"v1",
-						"game",
-						"1"
+						"games"
 					]
 				}
 			},

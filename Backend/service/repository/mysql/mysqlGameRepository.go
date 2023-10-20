@@ -2,27 +2,16 @@ package mysql
 
 import (
 	"context"
-	"time"
 
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"gorm.io/gorm"
 )
 
-type Game struct {
-	gorm.Model
-	Id        int `gorm:"primaryKey;auto_increment"`
-	Token     string
-	Players   []Player
-	CreatedAt time.Time `gorm:"autoCreateTime"`
-	UpdatedAt time.Time `gorm:"autoCreateTime"`
-	DeletedAt gorm.DeletedAt
-}
-
 type GameRepository struct {
 	db *gorm.DB
 }
 
-func NewGameRepository(db *gorm.DB) repository.GameRepository {
+func NewGameRepository(db *gorm.DB) *GameRepository {
 	return &GameRepository{
 		db: db,
 	}

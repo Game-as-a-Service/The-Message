@@ -1,11 +1,20 @@
 package repository
 
-import "context"
+import (
+	"context"
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Game struct {
-	Id      int `gorm:"primaryKey;auto_increment"`
-	Token   string
-	Players []Player
+	gorm.Model
+	Id        int `gorm:"primaryKey;auto_increment"`
+	Token     string
+	Players   []Player
+	CreatedAt time.Time `gorm:"autoCreateTime"`
+	UpdatedAt time.Time `gorm:"autoCreateTime"`
+	DeletedAt gorm.DeletedAt
 }
 
 type GameRepository interface {

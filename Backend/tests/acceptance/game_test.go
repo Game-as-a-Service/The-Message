@@ -4,22 +4,21 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/Game-as-a-Service/The-Message/config"
-	handler "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
-	repository "github.com/Game-as-a-Service/The-Message/service/repository"
-	mysqlRepo "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
-	"github.com/Game-as-a-Service/The-Message/service/service"
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/Game-as-a-Service/The-Message/config"
+	handler "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
+	mysqlRepo "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 var serverURL string
-var gameRepo repository.GameRepository
+var gameRepo *mysqlRepo.GameRepository
 
 func TestMain(m *testing.M) {
 	testDB := config.InitTestDB()
@@ -28,9 +27,8 @@ func TestMain(m *testing.M) {
 
 	gameRepo = mysqlRepo.NewGameRepository(testDB)
 	playerRepo := mysqlRepo.NewPlayerRepository(testDB)
-	gameServ := service.NewGameService(gameRepo, playerRepo)
 
-	handler.NewGameHandler(engine, gameServ)
+	handler.NewGameHandler(engine, gameRepo, playerRepo)
 
 	server := httptest.NewServer(engine)
 	serverURL = server.URL
