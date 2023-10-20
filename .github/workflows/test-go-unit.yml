@@ -5,10 +5,13 @@ on:
     paths:
       - Backend/**
       - .github/workflows/test-go-unit.yml
-  pull_request_target:
+  pull_request:
     paths:
       - Backend/**
       - .github/workflows/test-go-unit.yml
+
+env:
+  GO_VERSION: 1.21
 
 jobs:
   build:
@@ -32,7 +35,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21'
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Env handle
         working-directory: ./Backend
@@ -42,16 +45,49 @@ jobs:
         working-directory: ./Backend
         run: go build -v ./...
 
-      - name: Migration
-        working-directory: ./Backend
-        run: go run ./cmd/migrate/migrate.go
+  unit_test:
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup Go environment
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Test
         working-directory: ./Backend
-        run: go test ./... -v -count=1 -coverprofile=coverage.out
+        run: go test $(go list ./... | grep -v /tests/) -count=1 -v  -coverprofile=unit_test_coverage.out
 
-      - name: Upload coverage report as artifact
+      - name: Upload unit test coverage report as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: coverage-report
+          name: unit-test-coverage-report
+          path: ./Backend/unit_test_coverage.out
+
+  acceptance_test:
+    needs: unit_test
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup Go environment
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+
+      - name: Migration
+        working-directory: ./Backend
+        run: go run ./cmd/migrate/migrate.go
+      - name: Acceptance test
+        working-directory: ./Backend
+        run: go test ./... -v -count=1 -coverprofile=coverage.out
+
+      - name: Upload acceptance test coverage report as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: acceptance-test-coverage-report
           path: ./Backend/coverage.out
