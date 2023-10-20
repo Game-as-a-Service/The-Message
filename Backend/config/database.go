@@ -25,5 +25,5 @@ func InitDB() *gorm.DB {
 }
 
 func GetDSN(user string, password string, host string, port string, database string) string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", user, password, host, port, database)
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", user, password, host, port, database)
 }
