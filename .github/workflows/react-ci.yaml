@@ -1,0 +1,34 @@
+name: Vite React CI/CD
+
+on: 
+  push:
+    paths:
+      - Frontend/**
+  pull_request:
+    paths:
+      - Frontend/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: ./Frontend/the-message
+        run: npm install
+
+      - name: Build Vite app
+        working-directory: ./Frontend/the-message
+        run: npm run build
+
+      - name: Run Unit Tests
+        working-directory: ./Frontend/the-message
+        run: npm test
+
