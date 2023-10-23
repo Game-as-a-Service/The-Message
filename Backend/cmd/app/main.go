@@ -16,8 +16,9 @@ func main() {
 
 	gameRepo := mysqlRepo.NewGameRepository(db)
 	playerRepo := mysqlRepo.NewPlayerRepository(db)
+	cardRepo := mysqlRepo.NewCardRepository(db)
 
-	http.NewGameHandler(engine, gameRepo, playerRepo)
+	http.NewGameHandler(engine, gameRepo, playerRepo, cardRepo)
 
 	engine.Run(":8080")
 }

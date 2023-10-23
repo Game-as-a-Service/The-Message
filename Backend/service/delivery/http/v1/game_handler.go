@@ -16,12 +16,14 @@ import (
 type GameHandler struct {
 	GameRepo   repository.GameRepository
 	PlayerRepo repository.PlayerRepository
+	CardRepo   repository.CardRepository
 }
 
-func NewGameHandler(engine *gin.Engine, gameRepo *mysqlRepo.GameRepository, playerRepo *mysqlRepo.PlayerRepository) *GameHandler {
+func NewGameHandler(engine *gin.Engine, gameRepo *mysqlRepo.GameRepository, playerRepo *mysqlRepo.PlayerRepository, cardRepo *mysqlRepo.CardRepository) *GameHandler {
 	handler := &GameHandler{
 		GameRepo:   gameRepo,
 		PlayerRepo: playerRepo,
+		CardRepo:   cardRepo,
 	}
 	engine.POST("/api/v1/games", handler.StartGame)
 	engine.Static("/swagger", "./web/swagger-ui")
@@ -59,11 +61,13 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 	hashString := hex.EncodeToString(hash[:])
 	game.Token = hashString
 
+	// 建置遊戲
 	game, err := g.GameRepo.CreateGame(c, game)
 
 	// 建立身份牌牌堆
 	identityCards := service.InitIdentityCards(len(req.Players))
 
+	// 傳入玩家
 	for i, reqPlayer := range req.Players {
 		player := new(repository.Player)
 		player.Name = reqPlayer.Name
@@ -71,6 +75,9 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		player.IdentityCard = identityCards[i]
 		_, err = g.PlayerRepo.CreatePlayer(c, player)
 	}
+
+	// 情報（功能）排堆建立
+	_, err = g.CardRepo.InitialCard(c, game.Id)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
