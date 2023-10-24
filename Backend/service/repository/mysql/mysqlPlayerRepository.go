@@ -22,27 +22,47 @@ func (p *PlayerRepository) CreatePlayer(ctx context.Context, player *repository.
 	return player, err
 }
 
-func (p *PlayerRepository) PlayerDrawCard(ctx context.Context, playerId int) (*repository.Player, error) {
-
-	// Need to split.
+func (p *PlayerRepository) GetPlayer(ctx context.Context, playerId int) (*repository.Player, error) {
 	player := new(repository.Player)
 
-	playerResult := p.db.Table("players").First(player, "id = ?", playerId)
+	result := p.db.Table("players").First(player, "id = ?", playerId)
 
-	if playerResult.Error != nil {
-		return nil, playerResult.Error
+	if result.Error != nil {
+		return nil, result.Error
 	}
 
+	return player, nil
+}
+
+func (p *PlayerRepository) GetRandomCard(ctx context.Context, gameId int) (*repository.Card, error) {
 	card := new(repository.Card)
 
-	cardResult := p.db.Order("RAND()").Where(&repository.Card{GameId: player.GameId}).First(card)
+	result := p.db.Order("RAND()").Where(&repository.Card{GameId: gameId}).First(card)
 
-	if cardResult.Error != nil {
-		return nil, cardResult.Error
+	if result.Error != nil {
+		return nil, result.Error
 	}
 
-	return player, cardResult.Error
+	return card, nil
+}
 
-	// err := p.db.Table("players").Create(player).Error
-	// return player, err
+func (p *PlayerRepository) PlayerDrawCard(ctx context.Context, playerId int) (*repository.PlayerCards, error) {
+
+	player, _ := p.GetPlayer(ctx, playerId)
+
+	card, _ := p.GetRandomCard(ctx, player.GameId)
+
+	playerCard := &repository.PlayerCards{
+		PlayerId: player.Id,
+		CardId:   card.Id,
+		Type:     "hands",
+	}
+
+	result := p.db.Table("PlayerCards").Create(&playerCard)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return playerCard, nil
 }
