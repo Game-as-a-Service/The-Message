@@ -50,6 +50,11 @@ go run cmd/app/main.go
   }
   ```
 
+查看 API 文件網址：
+```
+http://localhost:8080/swagger/
+```
+
 ## Class Diagram
 
 ```mermaid
