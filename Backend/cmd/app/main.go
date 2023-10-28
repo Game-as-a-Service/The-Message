@@ -18,8 +18,12 @@ func main() {
 	playerRepo := mysqlRepo.NewPlayerRepository(db)
 	cardRepo := mysqlRepo.NewCardRepository(db)
 	deckRepo := mysqlRepo.NewDeckRepository(db)
+	playerCardRepo := mysqlRepo.NewPlayerCardRepository(db)
 
-	http.NewGameHandler(engine, gameRepo, playerRepo, cardRepo, deckRepo)
+	http.NewGameHandler(engine, gameRepo, playerRepo, cardRepo, deckRepo, playerCardRepo)
 
-	engine.Run(":8080")
+	err := engine.Run(":8080")
+	if err != nil {
+		return
+	}
 }

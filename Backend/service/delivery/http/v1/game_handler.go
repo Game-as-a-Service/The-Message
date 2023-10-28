@@ -14,10 +14,11 @@ import (
 )
 
 type GameHandler struct {
-	GameRepo   repository.GameRepository
-	PlayerRepo repository.PlayerRepository
-	CardRepo   repository.CardRepository
-	DeckRepo   repository.DeckRepository
+	GameRepo       repository.GameRepository
+	PlayerRepo     repository.PlayerRepository
+	CardRepo       repository.CardRepository
+	DeckRepo       repository.DeckRepository
+	PlayerCardRepo repository.PlayerCardRepository
 }
 
 func NewGameHandler(
@@ -26,12 +27,14 @@ func NewGameHandler(
 	playerRepo *mysqlRepo.PlayerRepository,
 	cardRepo *mysqlRepo.CardRepository,
 	deckRepo *mysqlRepo.DeckRepository,
+	playerCardRepo *mysqlRepo.PlayerCardRepository,
 ) *GameHandler {
 	handler := &GameHandler{
-		GameRepo:   gameRepo,
-		PlayerRepo: playerRepo,
-		CardRepo:   cardRepo,
-		DeckRepo:   deckRepo,
+		GameRepo:       gameRepo,
+		PlayerRepo:     playerRepo,
+		CardRepo:       cardRepo,
+		DeckRepo:       deckRepo,
+		PlayerCardRepo: playerCardRepo,
 	}
 	engine.POST("/api/v1/games", handler.StartGame)
 	engine.Static("/swagger", "./web/swagger-ui")
@@ -72,7 +75,6 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 	game, err := g.GameRepo.CreateGame(c, game)
 
 	identityCards := service.InitIdentityCards(len(req.Players))
-
 	for i, reqPlayer := range req.Players {
 		player := new(repository.Player)
 		player.Name = reqPlayer.Name
@@ -86,7 +88,37 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 	}
 
 	cards, err := g.CardRepo.Get(c)
-	service.InitialDeck(game.Id, cards, g.DeckRepo)
+	cards = service.InitialDeck(game.Id, cards)
+	for _, card := range cards {
+		deck := new(repository.Deck)
+		deck.GameId = game.Id
+		deck.CardId = card.Id
+		_, err := g.DeckRepo.CreateDeck(c, deck)
+		if err != nil {
+			return
+		}
+	}
+
+	players, err := g.PlayerRepo.GetPlayersByGameId(c, game.Id)
+	for _, player := range players {
+		drawCards, _ := g.DeckRepo.GetDecksByGameId(c, game.Id)
+		for i := 0; i < 3; i++ {
+			playerCards := new(repository.PlayerCard)
+			playerCards.GameId = game.Id
+			playerCards.PlayerId = player.Id
+			playerCards.CardId = drawCards[i].CardId
+			_, err := g.PlayerCardRepo.CreatePlayerCard(c, playerCards)
+			if err != nil {
+				return
+			}
+			// delete deck
+			err = g.DeckRepo.DeleteDeck(c, drawCards[i].Id)
+			if err != nil {
+				return
+			}
+		}
+
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"Id":    game.Id,

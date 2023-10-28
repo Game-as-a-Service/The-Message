@@ -34,21 +34,21 @@ func (p *PlayerRepository) GetPlayer(ctx context.Context, playerId int) (*reposi
 	return player, nil
 }
 
-func (p *PlayerRepository) GetPlayerById(ctx context.Context, id int) (*repository.Player, error) {
-	player := new(repository.Player)
+func (p *PlayerRepository) GetPlayersByGameId(ctx context.Context, id int) ([]*repository.Player, error) {
+	var players []*repository.Player
 
-	result := p.db.Table("players").First(player, "id = ?", id)
+	result := p.db.Table("players").Find(&players, "game_id = ?", id)
 
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	return player, nil
+	return players, nil
 }
 
-func (p *PlayerRepository) GetPlayerWithCardById(ctx context.Context, id int) (*repository.Player, error) {
+func (p *PlayerRepository) GetPlayerWithPlayerCards(ctx context.Context, playerId int) (*repository.Player, error) {
 	var player repository.Player
-	if err := p.db.Preload("Cards").First(&player, id).Error; err != nil {
+	if err := p.db.Debug().Preload("PlayerCards").Preload("PlayerCards.Card").First(&player, playerId).Error; err != nil {
 		return nil, err
 	}
 	return &player, nil

@@ -29,8 +29,9 @@ func TestMain(m *testing.M) {
 	playerRepo := mysqlRepo.NewPlayerRepository(testDB)
 	cardRepo := mysqlRepo.NewCardRepository(testDB)
 	deckRepo := mysqlRepo.NewDeckRepository(testDB)
+	playerCardRepo := mysqlRepo.NewPlayerCardRepository(testDB)
 
-	handler.NewGameHandler(engine, gameRepo, playerRepo, cardRepo, deckRepo)
+	handler.NewGameHandler(engine, gameRepo, playerRepo, cardRepo, deckRepo, playerCardRepo)
 
 	server := httptest.NewServer(engine)
 	serverURL = server.URL
