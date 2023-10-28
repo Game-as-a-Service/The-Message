@@ -32,6 +32,6 @@ type PlayerCards struct {
 type PlayerRepository interface {
 	CreatePlayer(ctx context.Context, player *Player) (*Player, error)
 	GetPlayer(ctx context.Context, playerId int) (*Player, error)
-	//GetRandomCard(ctx context.Context, gameId int) (*Card, error)
-	//PlayerDrawCard(ctx context.Context, playerId int) (*PlayerCards, error)
+	// GetRandomCard(ctx context.Context, gameId int) (*Card, error)
+	// PlayerDrawCard(ctx context.Context, playerId int) (*PlayerCards, error)
 }

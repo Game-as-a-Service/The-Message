@@ -17,13 +17,21 @@ type GameHandler struct {
 	GameRepo   repository.GameRepository
 	PlayerRepo repository.PlayerRepository
 	CardRepo   repository.CardRepository
+	DeckRepo   repository.DeckRepository
 }
 
-func NewGameHandler(engine *gin.Engine, gameRepo *mysqlRepo.GameRepository, playerRepo *mysqlRepo.PlayerRepository, cardRepo *mysqlRepo.CardRepository) *GameHandler {
+func NewGameHandler(
+	engine *gin.Engine,
+	gameRepo *mysqlRepo.GameRepository,
+	playerRepo *mysqlRepo.PlayerRepository,
+	cardRepo *mysqlRepo.CardRepository,
+	deckRepo *mysqlRepo.DeckRepository,
+) *GameHandler {
 	handler := &GameHandler{
 		GameRepo:   gameRepo,
 		PlayerRepo: playerRepo,
 		CardRepo:   cardRepo,
+		DeckRepo:   deckRepo,
 	}
 	engine.POST("/api/v1/games", handler.StartGame)
 	engine.Static("/swagger", "./web/swagger-ui")
@@ -61,28 +69,24 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 	hashString := hex.EncodeToString(hash[:])
 	game.Token = hashString
 
-	// 建置遊戲
 	game, err := g.GameRepo.CreateGame(c, game)
 
-	// 建立身份牌牌堆
 	identityCards := service.InitIdentityCards(len(req.Players))
 
-	// 傳入玩家
 	for i, reqPlayer := range req.Players {
 		player := new(repository.Player)
 		player.Name = reqPlayer.Name
 		player.GameId = game.Id
 		player.IdentityCard = identityCards[i]
 		_, err = g.PlayerRepo.CreatePlayer(c, player)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
-	// 情報（功能）排堆建立
-	//_, err = g.CardRepo.InitialCard(c, game.Id)
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+	cards, err := g.CardRepo.Get(c)
+	service.InitialDeck(game.Id, cards, g.DeckRepo)
 
 	c.JSON(http.StatusOK, gin.H{
 		"Id":    game.Id,
