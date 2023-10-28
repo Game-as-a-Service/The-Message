@@ -2,11 +2,7 @@ package mysql
 
 import (
 	"context"
-	"fmt"
-
-	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
-
 	"gorm.io/gorm"
 )
 
@@ -20,18 +16,25 @@ func NewCardRepository(db *gorm.DB) *CardRepository {
 	}
 }
 
-func (c *CardRepository) InitialCard(ctx context.Context, gameId int) ([]*repository.Card, error) {
+func (c *CardRepository) GetCardById(ctx context.Context, id int) (*repository.Card, error) {
+	card := new(repository.Card)
 
-	cards := enums.GetCards(gameId)
+	result := c.db.Table("cards").First(card, "id = ?", id)
 
-	var err error
-
-	for _, card := range cards {
-		err := c.db.Table("cards").Create(&card).Error
-		if err != nil {
-			fmt.Println("Error creating card:", err)
-		}
+	if result.Error != nil {
+		return nil, result.Error
 	}
 
-	return cards, err
+	return card, nil
+}
+
+func (c *CardRepository) CreateCard(ctx context.Context, card *repository.Card) (*repository.Card, error) {
+
+	result := c.db.Table("cards").Create(card)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return card, nil
 }

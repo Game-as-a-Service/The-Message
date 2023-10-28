@@ -77,7 +77,7 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 	}
 
 	// 情報（功能）排堆建立
-	_, err = g.CardRepo.InitialCard(c, game.Id)
+	//_, err = g.CardRepo.InitialCard(c, game.Id)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

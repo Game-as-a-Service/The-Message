@@ -34,35 +34,35 @@ func (p *PlayerRepository) GetPlayer(ctx context.Context, playerId int) (*reposi
 	return player, nil
 }
 
-func (p *PlayerRepository) GetRandomCard(ctx context.Context, gameId int) (*repository.Card, error) {
-	card := new(repository.Card)
+//func (p *PlayerRepository) GetRandomCard(ctx context.Context, gameId int) (*repository.Card, error) {
+//	card := new(repository.Card)
+//
+//	result := p.db.Order("RAND()").Where(&repository.Card{GameId: gameId}).First(card)
+//
+//	if result.Error != nil {
+//		return nil, result.Error
+//	}
+//
+//	return card, nil
+//}
 
-	result := p.db.Order("RAND()").Where(&repository.Card{GameId: gameId}).First(card)
-
-	if result.Error != nil {
-		return nil, result.Error
-	}
-
-	return card, nil
-}
-
-func (p *PlayerRepository) PlayerDrawCard(ctx context.Context, playerId int) (*repository.PlayerCards, error) {
-
-	player, _ := p.GetPlayer(ctx, playerId)
-
-	card, _ := p.GetRandomCard(ctx, player.GameId)
-
-	playerCard := &repository.PlayerCards{
-		PlayerId: player.Id,
-		CardId:   card.Id,
-		Type:     "hands",
-	}
-
-	result := p.db.Table("PlayerCards").Create(&playerCard)
-
-	if result.Error != nil {
-		return nil, result.Error
-	}
-
-	return playerCard, nil
-}
+//func (p *PlayerRepository) PlayerDrawCard(ctx context.Context, playerId int) (*repository.PlayerCards, error) {
+//
+//	player, _ := p.GetPlayer(ctx, playerId)
+//
+//	card, _ := p.GetRandomCard(ctx, player.GameId)
+//
+//	playerCard := &repository.PlayerCards{
+//		PlayerId: player.Id,
+//		CardId:   card.Id,
+//		Type:     "hands",
+//	}
+//
+//	result := p.db.Table("PlayerCards").Create(&playerCard)
+//
+//	if result.Error != nil {
+//		return nil, result.Error
+//	}
+//
+//	return playerCard, nil
+//}
