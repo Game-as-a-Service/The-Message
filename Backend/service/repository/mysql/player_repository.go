@@ -34,35 +34,22 @@ func (p *PlayerRepository) GetPlayer(ctx context.Context, playerId int) (*reposi
 	return player, nil
 }
 
-func (p *PlayerRepository) GetRandomCard(ctx context.Context, gameId int) (*repository.Card, error) {
-	card := new(repository.Card)
+func (p *PlayerRepository) GetPlayersByGameId(ctx context.Context, id int) ([]*repository.Player, error) {
+	var players []*repository.Player
 
-	result := p.db.Order("RAND()").Where(&repository.Card{GameId: gameId}).First(card)
+	result := p.db.Table("players").Find(&players, "game_id = ?", id)
 
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	return card, nil
+	return players, nil
 }
 
-func (p *PlayerRepository) PlayerDrawCard(ctx context.Context, playerId int) (*repository.PlayerCards, error) {
-
-	player, _ := p.GetPlayer(ctx, playerId)
-
-	card, _ := p.GetRandomCard(ctx, player.GameId)
-
-	playerCard := &repository.PlayerCards{
-		PlayerId: player.Id,
-		CardId:   card.Id,
-		Type:     "hands",
+func (p *PlayerRepository) GetPlayerWithPlayerCards(ctx context.Context, playerId int) (*repository.Player, error) {
+	var player repository.Player
+	if err := p.db.Debug().Preload("PlayerCards").Preload("PlayerCards.Card").First(&player, playerId).Error; err != nil {
+		return nil, err
 	}
-
-	result := p.db.Table("PlayerCards").Create(&playerCard)
-
-	if result.Error != nil {
-		return nil, result.Error
-	}
-
-	return playerCard, nil
+	return &player, nil
 }

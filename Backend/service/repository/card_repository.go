@@ -12,13 +12,13 @@ type Card struct {
 	Id        int `gorm:"primaryKey;auto_increment"`
 	Name      string
 	Color     string
-	IsDrawed  int
-	GameId    int       `gorm:"foreignKey:GameId;references:Id"`
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoCreateTime"`
 	DeletedAt gorm.DeletedAt
 }
 
 type CardRepository interface {
-	InitialCard(ctx context.Context, gameId int) ([]*Card, error)
+	GetCardById(ctx context.Context, id int) (*Card, error)
+	CreateCard(ctx context.Context, card *Card) (*Card, error)
+	GetCards(ctx context.Context) ([]*Card, error)
 }

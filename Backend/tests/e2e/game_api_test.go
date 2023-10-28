@@ -20,6 +20,7 @@ import (
 
 var serverURL string
 var gameRepo *mysqlRepo.GameRepository
+var playerRepo *mysqlRepo.PlayerRepository
 
 func TestMain(m *testing.M) {
 	testDB := config.InitTestDB()
@@ -27,10 +28,12 @@ func TestMain(m *testing.M) {
 	engine := gin.Default()
 
 	gameRepo = mysqlRepo.NewGameRepository(testDB)
-	playerRepo := mysqlRepo.NewPlayerRepository(testDB)
+	playerRepo = mysqlRepo.NewPlayerRepository(testDB)
 	cardRepo := mysqlRepo.NewCardRepository(testDB)
+	deckRepo := mysqlRepo.NewDeckRepository(testDB)
+	playerCardRepo := mysqlRepo.NewPlayerCardRepository(testDB)
 
-	handler.NewGameHandler(engine, gameRepo, playerRepo, cardRepo)
+	handler.NewGameHandler(engine, gameRepo, playerRepo, cardRepo, deckRepo, playerCardRepo)
 
 	server := httptest.NewServer(engine)
 	serverURL = server.URL
@@ -69,6 +72,11 @@ func TestStartGameE2E(t *testing.T) {
 	assert.NotEmpty(t, game.Players[0].IdentityCard)
 	assert.NotEmpty(t, game.Players[1].IdentityCard)
 	assert.NotEmpty(t, game.Players[2].IdentityCard)
+
+	for _, player := range game.Players {
+		playerCards, _ := playerRepo.GetPlayerWithPlayerCards(context.TODO(), player.Id)
+		assert.NotEmpty(t, playerCards.PlayerCards)
+	}
 }
 
 // Helper functions

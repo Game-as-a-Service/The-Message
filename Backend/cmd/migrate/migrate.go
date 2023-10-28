@@ -27,7 +27,11 @@ func MigrationMysql(db *gorm.DB) {
 	if err != nil {
 		return
 	}
-	err = db.AutoMigrate(&repository.PlayerCards{})
+	err = db.AutoMigrate(&repository.Deck{})
+	if err != nil {
+		return
+	}
+	err = db.AutoMigrate(&repository.PlayerCard{})
 	if err != nil {
 		return
 	}
@@ -46,7 +50,11 @@ func Migration(db *gorm.DB) {
 	if err != nil {
 		return
 	}
-	err = db.AutoMigrate(&repository.PlayerCards{})
+	err = db.AutoMigrate(&repository.Deck{})
+	if err != nil {
+		return
+	}
+	err = db.AutoMigrate(&repository.PlayerCard{})
 	if err != nil {
 		return
 	}
