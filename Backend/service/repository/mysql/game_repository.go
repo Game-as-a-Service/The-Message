@@ -17,10 +17,10 @@ func NewGameRepository(db *gorm.DB) *GameRepository {
 	}
 }
 
-func (p *GameRepository) GetGameById(ctx context.Context, id int) (*repository.Game, error) {
+func (g *GameRepository) GetGameById(ctx context.Context, id int) (*repository.Game, error) {
 	game := new(repository.Game)
 
-	result := p.db.Table("games").First(game, "id = ?", id)
+	result := g.db.Table("games").First(game, "id = ?", id)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -29,9 +29,9 @@ func (p *GameRepository) GetGameById(ctx context.Context, id int) (*repository.G
 	return game, nil
 }
 
-func (p *GameRepository) CreateGame(ctx context.Context, game *repository.Game) (*repository.Game, error) {
+func (g *GameRepository) CreateGame(ctx context.Context, game *repository.Game) (*repository.Game, error) {
 
-	result := p.db.Table("games").Create(game)
+	result := g.db.Table("games").Create(game)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -40,10 +40,10 @@ func (p *GameRepository) CreateGame(ctx context.Context, game *repository.Game) 
 	return game, nil
 }
 
-func (p *GameRepository) DeleteGame(ctx context.Context, id int) error {
+func (g *GameRepository) DeleteGame(ctx context.Context, id int) error {
 	game := new(repository.Game)
 
-	result := p.db.Table("games").Delete(game, "id = ?", id)
+	result := g.db.Table("games").Delete(game, "id = ?", id)
 
 	if result.Error != nil {
 		return result.Error
