@@ -87,7 +87,7 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		}
 	}
 
-	cards, err := g.CardRepo.Get(c)
+	cards, err := g.CardRepo.GetCards(c)
 	cards = service.InitialDeck(game.Id, cards)
 	for _, card := range cards {
 		deck := new(repository.Deck)
@@ -107,6 +107,7 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 			playerCards.GameId = game.Id
 			playerCards.PlayerId = player.Id
 			playerCards.CardId = drawCards[i].CardId
+			playerCards.Type = "hand"
 			_, err := g.PlayerCardRepo.CreatePlayerCard(c, playerCards)
 			if err != nil {
 				return

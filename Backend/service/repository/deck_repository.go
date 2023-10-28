@@ -17,8 +17,6 @@ type Deck struct {
 }
 
 type DeckRepository interface {
-	GetDeckById(ctx context.Context, id int) (*Deck, error)
-	Get(ctx context.Context) ([]*Deck, error)
 	CreateDeck(ctx context.Context, deck *Deck) (*Deck, error)
 	GetDecksByGameId(ctx context.Context, id int) ([]*Deck, error)
 	DeleteDeck(ctx context.Context, id int) error

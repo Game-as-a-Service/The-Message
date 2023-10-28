@@ -20,5 +20,5 @@ type Card struct {
 type CardRepository interface {
 	GetCardById(ctx context.Context, id int) (*Card, error)
 	CreateCard(ctx context.Context, card *Card) (*Card, error)
-	Get(ctx context.Context) ([]*Card, error)
+	GetCards(ctx context.Context) ([]*Card, error)
 }

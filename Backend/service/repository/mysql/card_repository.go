@@ -39,7 +39,7 @@ func (c *CardRepository) CreateCard(ctx context.Context, card *repository.Card) 
 	return card, nil
 }
 
-func (c *CardRepository) Get(ctx context.Context) ([]*repository.Card, error) {
+func (c *CardRepository) GetCards(ctx context.Context) ([]*repository.Card, error) {
 	var cards []*repository.Card
 
 	result := c.db.Table("cards").Find(&cards)
