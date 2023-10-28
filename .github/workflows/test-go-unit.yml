@@ -85,7 +85,10 @@ jobs:
 
       - name: Migration
         working-directory: ./Backend
-        run: go run ./cmd/migrate/migrate.go
+        run: |
+          go run ./cmd/migrate/migrate.go
+          go run ./cmd/migrate/game_card_seeder.go
+
       - name: 🎯 Acceptance test
         working-directory: ./Backend
         run: go test ./... -v -count=1 -coverprofile=coverage.out
