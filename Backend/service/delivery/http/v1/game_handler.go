@@ -7,44 +7,33 @@ import (
 	"strconv"
 
 	"github.com/Game-as-a-Service/The-Message/service/repository"
-	mysqlRepo "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
 	"github.com/Game-as-a-Service/The-Message/service/request"
-	service "github.com/Game-as-a-Service/The-Message/service/service"
+	"github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"
 )
 
 type GameHandler struct {
-	GameRepo       repository.GameRepository
-	PlayerRepo     repository.PlayerRepository
-	CardRepo       repository.CardRepository
-	DeckRepo       repository.DeckRepository
-	PlayerCardRepo repository.PlayerCardRepository
+	gameService service.GameService
 }
 
-func NewGameHandler(
-	engine *gin.Engine,
-	gameRepo *mysqlRepo.GameRepository,
-	playerRepo *mysqlRepo.PlayerRepository,
-	cardRepo *mysqlRepo.CardRepository,
-	deckRepo *mysqlRepo.DeckRepository,
-	playerCardRepo *mysqlRepo.PlayerCardRepository,
-) *GameHandler {
+type GameHandlerOptions struct {
+	Engine  *gin.Engine
+	Service service.GameService
+}
+
+func RegisterGameHandler(opts *GameHandlerOptions) {
 	handler := &GameHandler{
-		GameRepo:       gameRepo,
-		PlayerRepo:     playerRepo,
-		CardRepo:       cardRepo,
-		DeckRepo:       deckRepo,
-		PlayerCardRepo: playerCardRepo,
+		gameService: opts.Service,
 	}
-	engine.POST("/api/v1/games", handler.StartGame)
-	engine.Static("/swagger", "./web/swagger-ui")
-	return handler
+
+	opts.Engine.POST("/api/v1/games", handler.StartGame)
+	opts.Engine.Static("/swagger", "./web/swagger-ui")
 }
 
 func (g *GameHandler) GetGame(c *gin.Context) {
 	gameId, _ := strconv.Atoi(c.Param("gameId"))
 
-	game, err := g.GameRepo.GetGameById(c, gameId)
+	game, err := g.gameService.GetGameById(c, gameId)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -72,48 +61,49 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 	hashString := hex.EncodeToString(hash[:])
 	game.Token = hashString
 
-	game, err := g.GameRepo.CreateGame(c, game)
+	game, err := g.gameService.CreateGame(c, game)
 
-	identityCards := service.InitIdentityCards(len(req.Players))
+	identityCards := g.gameService.InitIdentityCards(len(req.Players))
 	for i, reqPlayer := range req.Players {
 		player := new(repository.Player)
 		player.Name = reqPlayer.Name
 		player.GameId = game.Id
 		player.IdentityCard = identityCards[i]
-		_, err = g.PlayerRepo.CreatePlayer(c, player)
+		_, err = g.gameService.CreatePlayer(c, player)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+
 	}
 
-	cards, err := g.CardRepo.GetCards(c)
-	cards = service.InitialDeck(game.Id, cards)
+	cards, err := g.gameService.GetCards(c)
+	cards = g.gameService.InitialDeck(game.Id, cards)
 	for _, card := range cards {
 		deck := new(repository.Deck)
 		deck.GameId = game.Id
 		deck.CardId = card.Id
-		_, err := g.DeckRepo.CreateDeck(c, deck)
+		_, err := g.gameService.CreateDeck(c, deck)
 		if err != nil {
 			return
 		}
 	}
 
-	players, err := g.PlayerRepo.GetPlayersByGameId(c, game.Id)
+	players, err := g.gameService.GetPlayersByGameId(c, game.Id)
 	for _, player := range players {
-		drawCards, _ := g.DeckRepo.GetDecksByGameId(c, game.Id)
+		drawCards, _ := g.gameService.GetDecksByGameId(c, game.Id)
 		for i := 0; i < 3; i++ {
 			playerCards := new(repository.PlayerCard)
 			playerCards.GameId = game.Id
 			playerCards.PlayerId = player.Id
 			playerCards.CardId = drawCards[i].CardId
 			playerCards.Type = "hand"
-			_, err := g.PlayerCardRepo.CreatePlayerCard(c, playerCards)
+			_, err := g.gameService.CreatePlayerCard(c, playerCards)
 			if err != nil {
 				return
 			}
 			// delete deck
-			err = g.DeckRepo.DeleteDeck(c, drawCards[i].Id)
+			err = g.gameService.DeleteDeck(c, drawCards[i].Id)
 			if err != nil {
 				return
 			}
@@ -130,7 +120,7 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 func (g *GameHandler) DeleteGame(c *gin.Context) {
 	gameId, _ := strconv.Atoi(c.Param("gameId"))
 
-	err := g.GameRepo.DeleteGame(c, gameId)
+	err := g.gameService.DeleteGame(c, gameId)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})

@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Game-as-a-Service/The-Message/config"
+	"github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"
 
 	http "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
@@ -20,7 +21,22 @@ func main() {
 	deckRepo := mysqlRepo.NewDeckRepository(db)
 	playerCardRepo := mysqlRepo.NewPlayerCardRepository(db)
 
-	http.NewGameHandler(engine, gameRepo, playerRepo, cardRepo, deckRepo, playerCardRepo)
+	gameService := service.NewGameService(
+		&service.GameServiceOptions{
+			GameRepo:       gameRepo,
+			PlayerRepo:     playerRepo,
+			CardRepo:       cardRepo,
+			DeckRepo:       deckRepo,
+			PlayerCardRepo: playerCardRepo,
+		},
+	)
+
+	http.RegisterGameHandler(
+		&http.GameHandlerOptions{
+			Engine:  engine,
+			Service: gameService,
+		},
+	)
 
 	err := engine.Run(":8080")
 	if err != nil {
