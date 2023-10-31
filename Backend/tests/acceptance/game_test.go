@@ -36,6 +36,11 @@ func TestMain(m *testing.M) {
 		CardRepo: cardRepo,
 	})
 
+	deckService := service.NewDeckService(&service.DeckServiceOptions{
+		DeckRepo:    deckRepo,
+		CardService: cardService,
+	})
+
 	playerService := service.NewPlayerService(&service.PlayerServiceOptions{
 		PlayerRepo:     playerRepo,
 		PlayerCardRepo: playerCardRepo,
@@ -45,8 +50,8 @@ func TestMain(m *testing.M) {
 		&service.GameServiceOptions{
 			GameRepo:      gameRepo,
 			PlayerService: playerService,
-			DeckRepo:      deckRepo,
 			CardService:   cardService,
+			DeckService:   deckService,
 		},
 	)
 
