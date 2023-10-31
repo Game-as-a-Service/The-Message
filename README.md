@@ -28,6 +28,11 @@ go run ./cmd/migrate/migrate.go
 go run  ./cmd/migrate/game_card_seeder.go
 ```
 
+- 自動產生 Swagger API 文件
+```bash
+swag init -g ./cmd/app/main.go -output ./cmd/app/docs
+```
+
 - 開啟 Go Web Server
 ```bash
 go run cmd/app/main.go
