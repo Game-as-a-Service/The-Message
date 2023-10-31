@@ -26,7 +26,6 @@ func (p PlayerCardRepository) GetPlayerCardById(ctx context.Context, id int) (*r
 	}
 
 	return card, nil
-
 }
 
 func (p PlayerCardRepository) GetPlayerCardsByGameId(ctx context.Context, id int) ([]*repository.PlayerCard, error) {

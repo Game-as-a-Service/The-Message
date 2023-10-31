@@ -4,37 +4,32 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
-	"github.com/Game-as-a-Service/The-Message/service/request"
 	"github.com/gin-gonic/gin"
 	"math/rand"
 	"time"
 )
 
 type GameService struct {
-	GameRepo       repository.GameRepository
-	PlayerRepo     repository.PlayerRepository
-	CardRepo       repository.CardRepository
-	DeckRepo       repository.DeckRepository
-	PlayerCardRepo repository.PlayerCardRepository
+	GameRepo      repository.GameRepository
+	PlayerService PlayerService
+	CardRepo      repository.CardRepository
+	DeckRepo      repository.DeckRepository
 }
 
 type GameServiceOptions struct {
-	GameRepo       repository.GameRepository
-	PlayerRepo     repository.PlayerRepository
-	CardRepo       repository.CardRepository
-	DeckRepo       repository.DeckRepository
-	PlayerCardRepo repository.PlayerCardRepository
+	GameRepo      repository.GameRepository
+	PlayerService PlayerService
+	CardRepo      repository.CardRepository
+	DeckRepo      repository.DeckRepository
 }
 
 func NewGameService(opts *GameServiceOptions) GameService {
 	return GameService{
-		GameRepo:       opts.GameRepo,
-		PlayerRepo:     opts.PlayerRepo,
-		CardRepo:       opts.CardRepo,
-		DeckRepo:       opts.DeckRepo,
-		PlayerCardRepo: opts.PlayerCardRepo,
+		GameRepo:      opts.GameRepo,
+		PlayerService: opts.PlayerService,
+		CardRepo:      opts.CardRepo,
+		DeckRepo:      opts.DeckRepo,
 	}
 }
 
@@ -45,18 +40,6 @@ func (g *GameService) ShuffleDeck(cards []*repository.Card) []*repository.Card {
 		cards[i], cards[j] = cards[j], cards[i]
 	})
 	return cards
-}
-
-func (g *GameService) InitIdentityCards(count int) []string {
-	identityCards := make([]string, count)
-
-	if count == 3 {
-		identityCards[0] = enums.UndercoverFront
-		identityCards[1] = enums.MilitaryAgency
-		identityCards[2] = enums.Bystander
-	}
-	identityCards = g.shuffle(identityCards)
-	return identityCards
 }
 
 func (g *GameService) shuffle(cards []string) []string {
@@ -83,14 +66,6 @@ func (g *GameService) CreateGame(c context.Context, game *repository.Game) (*rep
 	return game, nil
 }
 
-func (g *GameService) CreatePlayer(c context.Context, player *repository.Player) (*repository.Player, error) {
-	player, err := g.PlayerRepo.CreatePlayer(c, player)
-	if err != nil {
-		return nil, err
-	}
-	return player, nil
-}
-
 func (g *GameService) GetCards(c context.Context) ([]*repository.Card, error) {
 	cards, err := g.CardRepo.GetCards(c)
 	if err != nil {
@@ -107,14 +82,6 @@ func (g *GameService) CreateDeck(c context.Context, deck *repository.Deck) (*rep
 	return deck, nil
 }
 
-func (g *GameService) GetPlayersByGameId(c context.Context, id int) ([]*repository.Player, error) {
-	players, err := g.PlayerRepo.GetPlayersByGameId(c, id)
-	if err != nil {
-		return nil, err
-	}
-	return players, nil
-}
-
 func (g *GameService) GetDecksByGameId(c context.Context, id int) ([]*repository.Deck, error) {
 	decks, err := g.DeckRepo.GetDecksByGameId(c, id)
 	if err != nil {
@@ -124,16 +91,7 @@ func (g *GameService) GetDecksByGameId(c context.Context, id int) ([]*repository
 
 }
 
-func (g *GameService) CreatePlayerCard(c context.Context, cards *repository.PlayerCard) (*repository.PlayerCard, error) {
-	cards, err := g.PlayerCardRepo.CreatePlayerCard(c, cards)
-	if err != nil {
-		return nil, err
-	}
-	return cards, nil
-
-}
-
-func (g *GameService) DeleteDeck(c context.Context, id int) error {
+func (g *GameService) DeleteDeckFromGame(c context.Context, id int) error {
 	err := g.DeckRepo.DeleteDeck(c, id)
 	if err != nil {
 		return err
@@ -165,21 +123,6 @@ func (g *GameService) InitGame(c *gin.Context) (*repository.Game, error) {
 	return game, nil
 }
 
-func (g *GameService) InitPlayers(c *gin.Context, game *repository.Game, req request.CreateGameRequest) error {
-	identityCards := g.InitIdentityCards(len(req.Players))
-	for i, reqPlayer := range req.Players {
-		player := new(repository.Player)
-		player.Name = reqPlayer.Name
-		player.GameId = game.Id
-		player.IdentityCard = identityCards[i]
-		_, err := g.CreatePlayer(c, player)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (g *GameService) InitDeck(c *gin.Context, game *repository.Game) error {
 	cards, err := g.GetCards(c)
 	if err != nil {
@@ -206,17 +149,23 @@ func (g *GameService) InitDeck(c *gin.Context, game *repository.Game) error {
 
 func (g *GameService) DrawCard(c *gin.Context, game *repository.Game, player *repository.Player, drawCards []*repository.Deck, count int) error {
 	for i := 0; i < count; i++ {
-		playerCards := new(repository.PlayerCard)
-		playerCards.GameId = game.Id
-		playerCards.PlayerId = player.Id
-		playerCards.CardId = drawCards[i].CardId
-		playerCards.Type = "hand"
-		_, err := g.CreatePlayerCard(c, playerCards)
+		//card := new(repository.PlayerCard)
+		//card.GameId = game.Id
+		//card.PlayerId = player.Id
+		//card.CardId = drawCards[i].CardId
+		//card.Type = "hand"
+		card := &repository.PlayerCard{
+			GameId:   game.Id,
+			PlayerId: player.Id,
+			CardId:   drawCards[i].CardId,
+			Type:     "hand",
+		}
+		err := g.PlayerService.CreatePlayerCard(c, card)
 		if err != nil {
 			return err
 		}
 		// delete deck
-		err = g.DeleteDeck(c, drawCards[i].Id)
+		err = g.DeleteDeckFromGame(c, drawCards[i].Id)
 		if err != nil {
 			return err
 		}
@@ -225,7 +174,7 @@ func (g *GameService) DrawCard(c *gin.Context, game *repository.Game, player *re
 }
 
 func (g *GameService) DrawCardsForPlayers(c *gin.Context, game *repository.Game) error {
-	players, err := g.GetPlayersByGameId(c, game.Id)
+	players, err := g.PlayerService.GetPlayersByGameId(c, game.Id)
 	if err != nil {
 		return err
 	}
