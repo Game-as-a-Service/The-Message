@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"crypto/sha256"
+	"crypto/rand"
 	"encoding/hex"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 )
@@ -56,14 +56,14 @@ func (g *GameService) DeleteGame(c context.Context, id int) error {
 }
 
 func (g *GameService) InitGame(c context.Context) (*repository.Game, error) {
-	game := new(repository.Game)
-	jwtToken := "the-message" // 先亂寫Token
-	jwtBytes := []byte(jwtToken)
-	hash := sha256.Sum256(jwtBytes)
-	hashString := hex.EncodeToString(hash[:])
-	game.Token = hashString
+	token, err := g.GenerateSecureToken(256)
+	if err != nil {
+		return nil, err
+	}
 
-	game, err := g.CreateGame(c, game)
+	game, err := g.CreateGame(c, &repository.Game{
+		Token: token,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -112,4 +112,12 @@ func (g *GameService) InitDeck(c context.Context, game *repository.Game) error {
 		return err
 	}
 	return nil
+}
+
+func (g *GameService) GenerateSecureToken(n int) (string, error) {
+	bytes := make([]byte, n)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
 }

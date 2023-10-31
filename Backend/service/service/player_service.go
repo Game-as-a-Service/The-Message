@@ -28,11 +28,11 @@ func NewPlayerService(opts *PlayerServiceOptions) PlayerService {
 func (p *PlayerService) InitPlayers(c context.Context, game *repository.Game, req request.CreateGameRequest) error {
 	identityCards := p.InitIdentityCards(len(req.Players))
 	for i, reqPlayer := range req.Players {
-		player := new(repository.Player)
-		player.Name = reqPlayer.Name
-		player.GameId = game.Id
-		player.IdentityCard = identityCards[i]
-		_, err := p.CreatePlayer(c, player)
+		_, err := p.CreatePlayer(c, &repository.Player{
+			Name:         reqPlayer.Name,
+			GameId:       game.Id,
+			IdentityCard: identityCards[i],
+		})
 		if err != nil {
 			return err
 		}
