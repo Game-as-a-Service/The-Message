@@ -24,6 +24,30 @@ func NewDeckService(opts *DeckServiceOptions) DeckService {
 	}
 }
 
+func (d *DeckService) InitDeck(c context.Context, game *repository.Game) error {
+	cards, err := d.CardService.GetCards(c)
+	if err != nil {
+		return err
+	}
+
+	cards = d.ShuffleDeck(cards)
+
+	var deck []*repository.Deck
+
+	for _, card := range cards {
+		card, err := d.DeckRepo.CreateDeck(c, &repository.Deck{
+			GameId: game.Id,
+			CardId: card.Id,
+		})
+		if err != nil {
+			return err
+		}
+		deck = append(deck, card)
+	}
+
+	return nil
+}
+
 func (d *DeckService) ShuffleDeck(cards []*repository.Card) []*repository.Card {
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 
@@ -55,29 +79,5 @@ func (d *DeckService) DeleteDeckFromGame(c context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	return nil
-}
-
-func (d *DeckService) InitDeck(c context.Context, game *repository.Game) error {
-	cards, err := d.CardService.GetCards(c)
-	if err != nil {
-		return err
-	}
-
-	cards = d.ShuffleDeck(cards)
-
-	var deck []*repository.Deck
-
-	for _, card := range cards {
-		card, err := d.DeckRepo.CreateDeck(c, &repository.Deck{
-			GameId: game.Id,
-			CardId: card.Id,
-		})
-		if err != nil {
-			return err
-		}
-		deck = append(deck, card)
-	}
-
 	return nil
 }

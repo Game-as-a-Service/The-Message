@@ -30,31 +30,6 @@ func NewGameService(opts *GameServiceOptions) GameService {
 	}
 }
 
-func (g *GameService) GetGameById(c context.Context, id int) (*repository.Game, error) {
-	game, err := g.GameRepo.GetGameById(c, id)
-	if err != nil {
-		return nil, err
-	}
-	return game, nil
-}
-
-func (g *GameService) CreateGame(c context.Context, game *repository.Game) (*repository.Game, error) {
-	game, err := g.GameRepo.CreateGame(c, game)
-	if err != nil {
-		return nil, err
-	}
-	return game, nil
-}
-
-func (g *GameService) DeleteGame(c context.Context, id int) error {
-	err := g.GameRepo.DeleteGame(c, id)
-	if err != nil {
-		return err
-	}
-	return nil
-
-}
-
 func (g *GameService) InitGame(c context.Context) (*repository.Game, error) {
 	token, err := g.GenerateSecureToken(256)
 	if err != nil {
@@ -68,6 +43,14 @@ func (g *GameService) InitGame(c context.Context) (*repository.Game, error) {
 		return nil, err
 	}
 	return game, nil
+}
+
+func (g *GameService) InitDeck(c context.Context, game *repository.Game) error {
+	err := g.DeckService.InitDeck(c, game)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (g *GameService) DrawCard(c context.Context, game *repository.Game, player *repository.Player, drawCards []*repository.Deck, count int) error {
@@ -106,18 +89,35 @@ func (g *GameService) DrawCardsForAllPlayers(c context.Context, game *repository
 	return nil
 }
 
-func (g *GameService) InitDeck(c context.Context, game *repository.Game) error {
-	err := g.DeckService.InitDeck(c, game)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (g *GameService) GenerateSecureToken(n int) (string, error) {
 	bytes := make([]byte, n)
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err
 	}
 	return hex.EncodeToString(bytes), nil
+}
+
+func (g *GameService) CreateGame(c context.Context, game *repository.Game) (*repository.Game, error) {
+	game, err := g.GameRepo.CreateGame(c, game)
+	if err != nil {
+		return nil, err
+	}
+	return game, nil
+}
+
+func (g *GameService) GetGameById(c context.Context, id int) (*repository.Game, error) {
+	game, err := g.GameRepo.GetGameById(c, id)
+	if err != nil {
+		return nil, err
+	}
+	return game, nil
+}
+
+func (g *GameService) DeleteGame(c context.Context, id int) error {
+	err := g.GameRepo.DeleteGame(c, id)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
