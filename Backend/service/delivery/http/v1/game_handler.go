@@ -67,7 +67,7 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		return
 	}
 
-	if err := g.gameService.DrawCardsForPlayers(c, game); err != nil {
+	if err := g.gameService.DrawCardsForAllPlayers(c, game); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}

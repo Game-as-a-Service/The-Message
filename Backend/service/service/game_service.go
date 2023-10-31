@@ -90,7 +90,7 @@ func (g *GameService) DrawCard(c context.Context, game *repository.Game, player 
 	return nil
 }
 
-func (g *GameService) DrawCardsForPlayers(c context.Context, game *repository.Game) error {
+func (g *GameService) DrawCardsForAllPlayers(c context.Context, game *repository.Game) error {
 	players, err := g.PlayerService.GetPlayersByGameId(c, game.Id)
 	if err != nil {
 		return err
