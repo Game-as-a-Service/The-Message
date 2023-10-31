@@ -20,6 +20,10 @@ func main() {
 	deckRepo := mysqlRepo.NewDeckRepository(db)
 	playerCardRepo := mysqlRepo.NewPlayerCardRepository(db)
 
+	cardService := service.NewCardService(&service.CardServiceOptions{
+		CardRepo: cardRepo,
+	})
+
 	playerService := service.NewPlayerService(&service.PlayerServiceOptions{
 		PlayerRepo:     playerRepo,
 		PlayerCardRepo: playerCardRepo,
@@ -29,8 +33,8 @@ func main() {
 		&service.GameServiceOptions{
 			GameRepo:      gameRepo,
 			PlayerService: playerService,
-			CardRepo:      cardRepo,
 			DeckRepo:      deckRepo,
+			CardService:   cardService,
 		},
 	)
 

@@ -13,23 +13,23 @@ import (
 type GameService struct {
 	GameRepo      repository.GameRepository
 	PlayerService PlayerService
-	CardRepo      repository.CardRepository
 	DeckRepo      repository.DeckRepository
+	CardService   CardService
 }
 
 type GameServiceOptions struct {
 	GameRepo      repository.GameRepository
 	PlayerService PlayerService
-	CardRepo      repository.CardRepository
 	DeckRepo      repository.DeckRepository
+	CardService   CardService
 }
 
 func NewGameService(opts *GameServiceOptions) GameService {
 	return GameService{
 		GameRepo:      opts.GameRepo,
 		PlayerService: opts.PlayerService,
-		CardRepo:      opts.CardRepo,
 		DeckRepo:      opts.DeckRepo,
+		CardService:   opts.CardService,
 	}
 }
 
@@ -40,14 +40,6 @@ func (g *GameService) ShuffleDeck(cards []*repository.Card) []*repository.Card {
 		cards[i], cards[j] = cards[j], cards[i]
 	})
 	return cards
-}
-
-func (g *GameService) shuffle(cards []string) []string {
-	shuffledCards := make([]string, len(cards))
-	for i, j := range rand.Perm(len(cards)) {
-		shuffledCards[i] = cards[j]
-	}
-	return shuffledCards
 }
 
 func (g *GameService) GetGameById(c context.Context, id int) (*repository.Game, error) {
@@ -64,14 +56,6 @@ func (g *GameService) CreateGame(c context.Context, game *repository.Game) (*rep
 		return nil, err
 	}
 	return game, nil
-}
-
-func (g *GameService) GetCards(c context.Context) ([]*repository.Card, error) {
-	cards, err := g.CardRepo.GetCards(c)
-	if err != nil {
-		return nil, err
-	}
-	return cards, nil
 }
 
 func (g *GameService) CreateDeck(c context.Context, deck *repository.Deck) (*repository.Deck, error) {
@@ -124,7 +108,7 @@ func (g *GameService) InitGame(c *gin.Context) (*repository.Game, error) {
 }
 
 func (g *GameService) InitDeck(c *gin.Context, game *repository.Game) error {
-	cards, err := g.GetCards(c)
+	cards, err := g.CardService.GetCards(c)
 	if err != nil {
 		return err
 	}
