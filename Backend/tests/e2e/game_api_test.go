@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	v1 "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
+	"github.com/Game-as-a-Service/The-Message/service/service"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -11,8 +13,6 @@ import (
 	"testing"
 
 	"github.com/Game-as-a-Service/The-Message/config"
-	handler "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
-
 	mysqlRepo "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -33,7 +33,35 @@ func TestMain(m *testing.M) {
 	deckRepo := mysqlRepo.NewDeckRepository(testDB)
 	playerCardRepo := mysqlRepo.NewPlayerCardRepository(testDB)
 
-	handler.NewGameHandler(engine, gameRepo, playerRepo, cardRepo, deckRepo, playerCardRepo)
+	cardService := service.NewCardService(&service.CardServiceOptions{
+		CardRepo: cardRepo,
+	})
+
+	deckService := service.NewDeckService(&service.DeckServiceOptions{
+		DeckRepo:    deckRepo,
+		CardService: cardService,
+	})
+
+	playerService := service.NewPlayerService(&service.PlayerServiceOptions{
+		PlayerRepo:     playerRepo,
+		PlayerCardRepo: playerCardRepo,
+	})
+
+	gameService := service.NewGameService(
+		&service.GameServiceOptions{
+			GameRepo:      gameRepo,
+			PlayerService: playerService,
+			CardService:   cardService,
+			DeckService:   deckService,
+		},
+	)
+
+	v1.RegisterGameHandler(
+		&v1.GameHandlerOptions{
+			Engine:  engine,
+			Service: gameService,
+		},
+	)
 
 	server := httptest.NewServer(engine)
 	serverURL = server.URL
