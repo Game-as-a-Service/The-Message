@@ -62,7 +62,7 @@ go run cmd/app/main.go
 
 查看 API 文件網址：
 ```
-http://localhost:8080/swagger/
+http://127.0.0.1:8080/swagger/index.html
 ```
 
 ## Class Diagram

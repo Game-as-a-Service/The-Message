@@ -30,6 +30,13 @@ jobs:
         working-directory: ./Backend
         run: cp env .env
 
+      - name: Install dependencies
+        working-directory: ./Backend
+        run: |
+          go mod tidy
+          go mod download
+          go mod vendor
+
       - name: Build
         working-directory: ./Backend
         run: go build -v ./...
@@ -69,7 +76,7 @@ jobs:
           MYSQL_PASSWORD: ${{ secrets.DB_PASSWORD }}
         ports:
           - "3306:3306"
-    
+
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
