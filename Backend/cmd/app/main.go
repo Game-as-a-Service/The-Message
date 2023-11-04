@@ -1,14 +1,20 @@
 package main
 
 import (
+	_ "github.com/Game-as-a-Service/The-Message/cmd/app/docs"
 	"github.com/Game-as-a-Service/The-Message/config"
 	http "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
 	mysqlRepo "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
 	"github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @title			The Message API
+// @description	This is an online version of the "The Message" board game backend API
+// @host			127.0.0.1:8080
 func main() {
 	db := config.InitDB()
 
@@ -49,6 +55,7 @@ func main() {
 			Service: gameService,
 		},
 	)
+	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	err := engine.Run(":8080")
 	if err != nil {
