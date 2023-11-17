@@ -18,14 +18,14 @@ func NewPlayerRepository(db *gorm.DB) *PlayerRepository {
 }
 
 func (p *PlayerRepository) CreatePlayer(ctx context.Context, player *repository.Player) (*repository.Player, error) {
-	err := p.db.Table("players").Create(player).Error
+	err := p.db.Create(&player).Error
 	return player, err
 }
 
 func (p *PlayerRepository) GetPlayer(ctx context.Context, playerId int) (*repository.Player, error) {
 	player := new(repository.Player)
 
-	result := p.db.Table("players").First(player, "id = ?", playerId)
+	result := p.db.First(&player, "id = ?", playerId)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -37,7 +37,7 @@ func (p *PlayerRepository) GetPlayer(ctx context.Context, playerId int) (*reposi
 func (p *PlayerRepository) GetPlayersByGameId(ctx context.Context, id int) ([]*repository.Player, error) {
 	var players []*repository.Player
 
-	result := p.db.Table("players").Find(&players, "game_id = ?", id)
+	result := p.db.Find(&players, "game_id = ?", id)
 
 	if result.Error != nil {
 		return nil, result.Error

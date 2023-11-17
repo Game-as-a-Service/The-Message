@@ -19,7 +19,7 @@ func NewCardRepository(db *gorm.DB) *CardRepository {
 func (c *CardRepository) GetCardById(ctx context.Context, id int) (*repository.Card, error) {
 	card := new(repository.Card)
 
-	result := c.db.Table("cards").First(card, "id = ?", id)
+	result := c.db.First(&card, "id = ?", id)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -30,7 +30,7 @@ func (c *CardRepository) GetCardById(ctx context.Context, id int) (*repository.C
 
 func (c *CardRepository) CreateCard(ctx context.Context, card *repository.Card) (*repository.Card, error) {
 
-	result := c.db.Table("cards").Create(card)
+	result := c.db.Create(&card)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -42,7 +42,7 @@ func (c *CardRepository) CreateCard(ctx context.Context, card *repository.Card) 
 func (c *CardRepository) GetCards(ctx context.Context) ([]*repository.Card, error) {
 	var cards []*repository.Card
 
-	result := c.db.Table("cards").Find(&cards)
+	result := c.db.Find(&cards)
 
 	if result.Error != nil {
 		return nil, result.Error

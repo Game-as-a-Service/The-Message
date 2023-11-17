@@ -17,7 +17,7 @@ func NewDeckRepository(db *gorm.DB) *DeckRepository {
 }
 
 func (d *DeckRepository) CreateDeck(ctx context.Context, deck *repository.Deck) (*repository.Deck, error) {
-	result := d.db.Table("decks").Create(deck)
+	result := d.db.Create(&deck)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -29,7 +29,7 @@ func (d *DeckRepository) CreateDeck(ctx context.Context, deck *repository.Deck) 
 func (d *DeckRepository) GetDecksByGameId(ctx context.Context, id int) ([]*repository.Deck, error) {
 	var decks []*repository.Deck
 
-	result := d.db.Table("decks").Find(&decks, "game_id = ?", id)
+	result := d.db.Find(&decks, "game_id = ?", id)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -41,7 +41,7 @@ func (d *DeckRepository) GetDecksByGameId(ctx context.Context, id int) ([]*repos
 func (d *DeckRepository) DeleteDeck(ctx context.Context, id int) error {
 	deck := new(repository.Deck)
 
-	result := d.db.Table("decks").Delete(deck, "id = ?", id)
+	result := d.db.Delete(&deck, "id = ?", id)
 
 	if result.Error != nil {
 		return result.Error
