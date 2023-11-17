@@ -20,7 +20,7 @@ func NewGameRepository(db *gorm.DB) *GameRepository {
 func (g *GameRepository) GetGameById(ctx context.Context, id int) (*repository.Game, error) {
 	game := new(repository.Game)
 
-	result := g.db.Table("games").First(game, "id = ?", id)
+	result := g.db.First(&game, "id = ?", id)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -31,7 +31,7 @@ func (g *GameRepository) GetGameById(ctx context.Context, id int) (*repository.G
 
 func (g *GameRepository) CreateGame(ctx context.Context, game *repository.Game) (*repository.Game, error) {
 
-	result := g.db.Table("games").Create(game)
+	result := g.db.Create(&game)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -43,7 +43,7 @@ func (g *GameRepository) CreateGame(ctx context.Context, game *repository.Game) 
 func (g *GameRepository) DeleteGame(ctx context.Context, id int) error {
 	game := new(repository.Game)
 
-	result := g.db.Table("games").Delete(game, "id = ?", id)
+	result := g.db.Delete(&game, "id = ?", id)
 
 	if result.Error != nil {
 		return result.Error
