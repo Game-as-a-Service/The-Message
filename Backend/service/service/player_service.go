@@ -2,10 +2,11 @@ package service
 
 import (
 	"context"
+	"math/rand"
+
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"github.com/Game-as-a-Service/The-Message/service/request"
-	"math/rand"
 )
 
 type PlayerService struct {
@@ -82,4 +83,18 @@ func (p *PlayerService) CreatePlayerCard(c context.Context, card *repository.Pla
 		return err
 	}
 	return nil
+}
+
+func (p *PlayerService) GetPlayerCardsByPlayerId(c context.Context, id int) ([]*repository.PlayerCard, error) {
+	player, err := p.PlayerRepo.GetPlayer(c, id)
+	if err != nil {
+		return nil, err
+	}
+
+	cards, err := p.PlayerCardRepo.GetPlayerCardsByPlayerId(c, player.Id)
+
+	if err != nil {
+		return nil, err
+	}
+	return cards, nil
 }

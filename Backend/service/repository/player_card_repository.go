@@ -2,8 +2,9 @@ package repository
 
 import (
 	"context"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type PlayerCard struct {
@@ -25,4 +26,5 @@ type PlayerCardRepository interface {
 	GetPlayerCardsByGameId(ctx context.Context, id int) ([]*PlayerCard, error)
 	CreatePlayerCard(ctx context.Context, card *PlayerCard) (*PlayerCard, error)
 	DeletePlayerCard(ctx context.Context, id int) error
+	GetPlayerCardsByPlayerId(ctx context.Context, id int) ([]*PlayerCard, error)
 }
