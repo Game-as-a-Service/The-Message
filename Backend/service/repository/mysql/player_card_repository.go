@@ -66,7 +66,7 @@ func (p PlayerCardRepository) DeletePlayerCard(ctx context.Context, id int) erro
 func (p *PlayerCardRepository) GetPlayerCardsByPlayerId(ctx context.Context, id int) ([]*repository.PlayerCard, error) {
 
 	var cards []*repository.PlayerCard
-	result := p.db.Preload("player_cards").Find(&cards, "player_id = ?", id)
+	result := p.db.Find(&cards, "player_id = ?", id)
 
 	if result.Error != nil {
 		return nil, result.Error

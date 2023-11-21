@@ -22,7 +22,7 @@ func RegisterPlayerHandler(opts *PlayerHandlerOptions) {
 		playerService: opts.Service,
 	}
 
-	opts.Engine.GET("/api/v1/player_cards", handler.GetPlayerCards)
+	opts.Engine.GET("/api/v1/player_cards/:playerId", handler.GetPlayerCards)
 }
 
 func (p *PlayerHandler) GetPlayerCards(c *gin.Context) {
