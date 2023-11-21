@@ -25,6 +25,14 @@ func RegisterPlayerHandler(opts *PlayerHandlerOptions) {
 	opts.Engine.GET("/api/v1/player_cards/:playerId", handler.GetPlayerCards)
 }
 
+// GetPlayerCards godoc
+// @Summary GetPlayerCards
+// @Description GetPlayerCardsByPlayerId
+// @Tags player_cards
+// @Produce json
+// @Param id path int true "Player ID"
+// @Success 200 {object} request.PlayerCardsResponse
+// @Router /api/v1/player_cards/{id} [get]
 func (p *PlayerHandler) GetPlayerCards(c *gin.Context) {
 	playerId, _ := strconv.Atoi(c.Param("playerId"))
 	cards, err := p.playerService.GetPlayerCardsByPlayerId(c, playerId)
