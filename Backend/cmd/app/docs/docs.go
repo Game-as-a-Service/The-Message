@@ -48,6 +48,35 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/player_cards/{id}": {
+            "get": {
+                "description": "GetPlayerCardsByPlayerId",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "player_cards"
+                ],
+                "summary": "GetPlayerCards",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/request.PlayerCardsResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -69,6 +98,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.PlayerCardsResponse": {
+            "type": "object",
+            "properties": {
+                "cardIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
                     "type": "string"
                 }
             }
