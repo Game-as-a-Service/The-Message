@@ -1,25 +1,26 @@
 package http
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"log"
 )
 
 type Event struct {
-	Message       chan string
+	Message       chan map[string]any
 	NewClients    chan chan string
 	ClosedClients chan chan string
-	TotalClients  map[chan string]bool
+	TotalClients  map[chan string]any
 }
 
 type ClientChan chan string
 
 func NewSSEServer() (event *Event) {
 	event = &Event{
-		Message:       make(chan string),
+		Message:       make(chan map[string]any),
 		NewClients:    make(chan chan string),
 		ClosedClients: make(chan chan string),
-		TotalClients:  make(map[chan string]bool),
+		TotalClients:  make(map[chan string]any),
 	}
 
 	go event.listen()
@@ -40,8 +41,14 @@ func (stream *Event) listen() {
 			log.Printf("Removed client. %d registered clients", len(stream.TotalClients))
 
 		case eventMsg := <-stream.Message:
+			jsonMsg, err := json.Marshal(eventMsg)
+			if err != nil {
+				// 处理错误
+				continue
+			}
+
 			for clientMessageChan := range stream.TotalClients {
-				clientMessageChan <- eventMsg
+				clientMessageChan <- string(jsonMsg)
 			}
 		}
 	}

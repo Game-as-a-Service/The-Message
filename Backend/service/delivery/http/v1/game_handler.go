@@ -28,7 +28,7 @@ func RegisterGameHandler(opts *GameHandlerOptions) {
 	}
 
 	opts.Engine.POST("/api/v1/games", handler.StartGame)
-	opts.Engine.GET("/api/v1/games/:gameId/event", HeadersMiddleware(), opts.SSE.serveHTTP(), handler.GameEvent)
+	opts.Engine.GET("/api/v1/games/:gameId/events", HeadersMiddleware(), opts.SSE.serveHTTP(), handler.GameEvent)
 }
 
 // StartGame godoc
@@ -69,7 +69,10 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		return
 	}
 
-	g.SSE.Message <- "Game started"
+	g.SSE.Message <- gin.H{
+		"message": "Game started",
+		"game":    game,
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"Id":    game.Id,
