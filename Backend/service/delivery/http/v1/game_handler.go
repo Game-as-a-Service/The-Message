@@ -2,8 +2,8 @@ package http
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -113,6 +113,15 @@ func (g *GameHandler) DeleteGame(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Game deleted"})
 }
 
+// GameEvent godoc
+// @Summary Get game events
+// @Description Get game events
+// @Tags games
+// @Accept json
+// @Produce json
+// @Param gameId path int true "Game ID"
+// @Success 200 {object} GameSSERequest
+// @Router /api/v1/games/{gameId}/events [get]
 func (g *GameHandler) GameEvent(c *gin.Context) {
 	gameId, err := strconv.Atoi(c.Param("gameId"))
 	if err != nil {
@@ -130,15 +139,12 @@ func (g *GameHandler) GameEvent(c *gin.Context) {
 	}
 
 	c.Stream(func(w io.Writer) bool {
-		// Stream message to client from message channel
 		if msg, ok := <-clientChan; ok {
-			DD(msg)
 			data := GameSSERequest{}
 			err := json.Unmarshal([]byte(msg), &data)
 			if err != nil {
-
+				log.Fatalf(err.Error())
 			}
-			DD(data)
 
 			if data.GameId == gameId {
 				c.SSEvent("message", msg)
@@ -153,13 +159,4 @@ type GameSSERequest struct {
 	GameId  int    `json:"gameId,string"`
 	Message string `json:"message"`
 	Status  string `json:"status"`
-}
-
-func VarDD(x interface{}) {
-	fmt.Printf("%T\n", x)
-}
-
-func DD(x interface{}) {
-	VarDD(x)
-	fmt.Printf("%+v\n", x)
 }
