@@ -1,9 +1,7 @@
 package http
 
 import (
-	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -14,39 +12,23 @@ import (
 
 type GameHandler struct {
 	gameService service.GameService
+	SSE         *Event
 }
 
 type GameHandlerOptions struct {
 	Engine  *gin.Engine
 	Service service.GameService
+	SSE     *Event
 }
 
 func RegisterGameHandler(opts *GameHandlerOptions) {
 	handler := &GameHandler{
 		gameService: opts.Service,
+		SSE:         opts.SSE,
 	}
-	stream := NewServer()
 
 	opts.Engine.POST("/api/v1/games", handler.StartGame)
-	//opts.Engine.GET("/api/v1/games/:gameId/event", handler.GameEvent)
-	opts.Engine.GET("/api/v1/games/:gameId/event", HeadersMiddleware(), stream.serveHTTP(), func(c *gin.Context) {
-		v, ok := c.Get("clientChan")
-		if !ok {
-			return
-		}
-		clientChan, ok := v.(ClientChan)
-		if !ok {
-			return
-		}
-		c.Stream(func(w io.Writer) bool {
-			// Stream message to client from message channel
-			if msg, ok := <-clientChan; ok {
-				c.SSEvent("message", msg)
-				return true
-			}
-			return false
-		})
-	})
+	opts.Engine.GET("/api/v1/games/:gameId/event", HeadersMiddleware(), opts.SSE.serveHTTP(), handler.GameEvent)
 }
 
 // StartGame godoc
@@ -87,7 +69,7 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		return
 	}
 
-	c.SSEvent("message", gin.H{"message": "Game started"})
+	g.SSE.Message <- "Game started"
 
 	c.JSON(http.StatusOK, gin.H{
 		"Id":    game.Id,
@@ -125,14 +107,6 @@ func (g *GameHandler) DeleteGame(c *gin.Context) {
 }
 
 func (g *GameHandler) GameEvent(c *gin.Context) {
-	c.Writer.Header().Set("Content-Type", "text/event-stream")
-	c.Writer.Header().Set("Cache-Control", "no-cache")
-	c.Writer.Header().Set("Connection", "keep-alive")
-	c.Writer.Header().Set("Transfer-Encoding", "chunked")
-
-	stream := NewServer()
-	stream.serveHTTP()
-
 	v, ok := c.Get("clientChan")
 	if !ok {
 		return
@@ -149,76 +123,4 @@ func (g *GameHandler) GameEvent(c *gin.Context) {
 		}
 		return false
 	})
-	gameId, _ := strconv.Atoi(c.Param("gameId"))
-	gameStr, _ := fmt.Scanf("Game started %s", &gameId)
-	c.SSEvent("message", gameStr)
-
-}
-
-type ClientChan chan string
-
-type Event struct {
-	Message       chan string
-	NewClients    chan chan string
-	ClosedClients chan chan string
-	TotalClients  map[chan string]bool
-}
-
-func (stream *Event) listen() {
-	for {
-		select {
-		case client := <-stream.NewClients:
-			stream.TotalClients[client] = true
-			log.Printf("Client added. %d registered clients", len(stream.TotalClients))
-
-		case client := <-stream.ClosedClients:
-			delete(stream.TotalClients, client)
-			close(client)
-			log.Printf("Removed client. %d registered clients", len(stream.TotalClients))
-
-		case eventMsg := <-stream.Message:
-			for clientMessageChan := range stream.TotalClients {
-				clientMessageChan <- eventMsg
-			}
-		}
-	}
-}
-
-func (stream *Event) serveHTTP() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		clientChan := make(ClientChan)
-
-		stream.NewClients <- clientChan
-
-		defer func() {
-			stream.ClosedClients <- clientChan
-		}()
-
-		c.Set("clientChan", clientChan)
-
-		c.Next()
-	}
-}
-
-func NewServer() (event *Event) {
-	event = &Event{
-		Message:       make(chan string),
-		NewClients:    make(chan chan string),
-		ClosedClients: make(chan chan string),
-		TotalClients:  make(map[chan string]bool),
-	}
-
-	go event.listen()
-
-	return
-}
-
-func HeadersMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Content-Type", "text/event-stream")
-		c.Writer.Header().Set("Cache-Control", "no-cache")
-		c.Writer.Header().Set("Connection", "keep-alive")
-		c.Writer.Header().Set("Transfer-Encoding", "chunked")
-		c.Next()
-	}
 }

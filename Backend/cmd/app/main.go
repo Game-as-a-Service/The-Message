@@ -19,16 +19,7 @@ func main() {
 	db := config.NewDatabase()
 
 	engine := gin.Default()
-	//go func() {
-	//	for {
-	//		time.Sleep(time.Second * 10)
-	//		now := time.Now().Format("2006-01-02 15:04:05")
-	//		currentTime := fmt.Sprintf("The Current Time Is %v", now)
-	//
-	//		// Send current time to clients message channel
-	//		stream.Message <- currentTime
-	//	}
-	//}()
+	sse := http.NewSSEServer()
 
 	gameRepo := mysqlRepo.NewGameRepository(db)
 	playerRepo := mysqlRepo.NewPlayerRepository(db)
@@ -66,6 +57,7 @@ func main() {
 		&http.GameHandlerOptions{
 			Engine:  engine,
 			Service: gameService,
+			SSE:     sse,
 		},
 	)
 
