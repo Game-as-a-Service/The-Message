@@ -1,6 +1,8 @@
 package http
 
 import (
+	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -71,7 +73,9 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 
 	g.SSE.Message <- gin.H{
 		"message": "Game started",
-		"game":    game,
+		"status":  "started",
+		"gameId":  strconv.Itoa(game.Id),
+		//"game":    game,
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -110,20 +114,52 @@ func (g *GameHandler) DeleteGame(c *gin.Context) {
 }
 
 func (g *GameHandler) GameEvent(c *gin.Context) {
+	gameId, err := strconv.Atoi(c.Param("gameId"))
+	if err != nil {
+		return
+	}
+
 	v, ok := c.Get("clientChan")
 	if !ok {
 		return
 	}
+
 	clientChan, ok := v.(ClientChan)
 	if !ok {
 		return
 	}
+
 	c.Stream(func(w io.Writer) bool {
 		// Stream message to client from message channel
 		if msg, ok := <-clientChan; ok {
-			c.SSEvent("message", msg)
+			DD(msg)
+			data := GameSSERequest{}
+			err := json.Unmarshal([]byte(msg), &data)
+			if err != nil {
+
+			}
+			DD(data)
+
+			if data.GameId == gameId {
+				c.SSEvent("message", msg)
+			}
 			return true
 		}
 		return false
 	})
+}
+
+type GameSSERequest struct {
+	GameId  int    `json:"gameId,string"`
+	Message string `json:"message"`
+	Status  string `json:"status"`
+}
+
+func VarDD(x interface{}) {
+	fmt.Printf("%T\n", x)
+}
+
+func DD(x interface{}) {
+	VarDD(x)
+	fmt.Printf("%+v\n", x)
 }
