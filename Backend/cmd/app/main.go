@@ -19,6 +19,16 @@ func main() {
 	db := config.NewDatabase()
 
 	engine := gin.Default()
+	//go func() {
+	//	for {
+	//		time.Sleep(time.Second * 10)
+	//		now := time.Now().Format("2006-01-02 15:04:05")
+	//		currentTime := fmt.Sprintf("The Current Time Is %v", now)
+	//
+	//		// Send current time to clients message channel
+	//		stream.Message <- currentTime
+	//	}
+	//}()
 
 	gameRepo := mysqlRepo.NewGameRepository(db)
 	playerRepo := mysqlRepo.NewPlayerRepository(db)
