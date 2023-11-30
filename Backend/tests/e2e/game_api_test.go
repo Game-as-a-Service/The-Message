@@ -4,17 +4,17 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/Game-as-a-Service/The-Message/config"
 	v1 "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
 	"github.com/Game-as-a-Service/The-Message/service/service"
+	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 
-	"github.com/Game-as-a-Service/The-Message/config"
 	mysqlRepo "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 

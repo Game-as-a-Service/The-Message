@@ -16,7 +16,7 @@ import (
 // @description	This is an online version of the "The Message" board game backend API
 // @host			127.0.0.1:8080
 func main() {
-	db := config.InitDB()
+	db := config.NewDatabase()
 
 	engine := gin.Default()
 

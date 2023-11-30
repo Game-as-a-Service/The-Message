@@ -13,7 +13,7 @@ func InitTestDB() *gorm.DB {
 		return nil
 	}
 
-	db := InitDB()
+	db := NewDatabase()
 	return db
 }
 
