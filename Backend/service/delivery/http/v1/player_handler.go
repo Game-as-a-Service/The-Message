@@ -22,7 +22,7 @@ func RegisterPlayerHandler(opts *PlayerHandlerOptions) {
 		playerService: opts.Service,
 	}
 
-	opts.Engine.GET("/api/v1/player_cards/:playerId", handler.GetPlayerCards)
+	opts.Engine.GET("/api/v1/player/:playerId/player-cards/", handler.GetPlayerCards)
 }
 
 // GetPlayerCards godoc
@@ -41,12 +41,16 @@ func (p *PlayerHandler) GetPlayerCards(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
-	var cards_Ids []string
+	// var cards_Ids []string
+	player_cards := []map[string]interface{}{}
+
 	for _, card := range cards {
-		cards_Ids = append(cards_Ids, strconv.Itoa(card.CardId))
+		dict := map[string]interface{}{
+			"id":    card.CardId,
+			"name":  card.Card.Name,
+			"color": card.Card.Color,
+		}
+		player_cards = append(player_cards, dict)
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"Id":          playerId,
-		"PlayerCards": cards_Ids,
-	})
+	c.JSON(http.StatusOK, gin.H{"player_cards": player_cards})
 }
