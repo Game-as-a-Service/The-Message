@@ -22,7 +22,7 @@ func RegisterHeartbeatHandler(opts *HeartbeatHandler) {
 // @Accept json
 // @Produce json
 // @Success 204
-// @Router /api/v1/heartbeat [get]
+// @Router /api/v1/heartbeat [GET]
 func (g *HeartbeatHandler) Heartbeat(c *gin.Context) {
 	c.JSON(http.StatusNoContent, http.NoBody)
 }

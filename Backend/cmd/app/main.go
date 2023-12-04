@@ -56,6 +56,7 @@ func main() {
 		},
 	)
 
+	// Register the heartbeat handler
 	http.RegisterHeartbeatHandler(
 		&http.HeartbeatHandler{
 			Engine: engine,
