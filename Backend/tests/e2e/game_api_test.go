@@ -1,77 +1,12 @@
 package e2e
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/Game-as-a-Service/The-Message/config"
-	v1 "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
-	"github.com/Game-as-a-Service/The-Message/service/service"
-	"github.com/gin-gonic/gin"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"os"
-	"testing"
-
-	mysqlRepo "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
 	"github.com/stretchr/testify/assert"
 )
 
-var serverURL string
-var gameRepo *mysqlRepo.GameRepository
-var playerRepo *mysqlRepo.PlayerRepository
-
-func TestMain(m *testing.M) {
-	testDB := config.InitTestDB()
-
-	engine := gin.Default()
-
-	gameRepo = mysqlRepo.NewGameRepository(testDB)
-	playerRepo = mysqlRepo.NewPlayerRepository(testDB)
-	cardRepo := mysqlRepo.NewCardRepository(testDB)
-	deckRepo := mysqlRepo.NewDeckRepository(testDB)
-	playerCardRepo := mysqlRepo.NewPlayerCardRepository(testDB)
-
-	cardService := service.NewCardService(&service.CardServiceOptions{
-		CardRepo: cardRepo,
-	})
-
-	deckService := service.NewDeckService(&service.DeckServiceOptions{
-		DeckRepo:    deckRepo,
-		CardService: cardService,
-	})
-
-	playerService := service.NewPlayerService(&service.PlayerServiceOptions{
-		PlayerRepo:     playerRepo,
-		PlayerCardRepo: playerCardRepo,
-	})
-
-	gameService := service.NewGameService(
-		&service.GameServiceOptions{
-			GameRepo:      gameRepo,
-			PlayerService: playerService,
-			CardService:   cardService,
-			DeckService:   deckService,
-		},
-	)
-
-	v1.RegisterGameHandler(
-		&v1.GameHandlerOptions{
-			Engine:  engine,
-			Service: gameService,
-		},
-	)
-
-	server := httptest.NewServer(engine)
-	serverURL = server.URL
-
-	code := m.Run()
-	defer server.Close()
-	os.Exit(code)
-}
-
-func TestStartGameE2E(t *testing.T) {
+func (suite *IntegrationTestSuite) TestStartGameE2E() {
 	players := []Player{
 		{ID: "6497f6f226b40d440b9a90cc", Name: "A"},
 		{ID: "6498112b26b40d440b9a90ce", Name: "B"},
@@ -81,33 +16,32 @@ func TestStartGameE2E(t *testing.T) {
 
 	jsonBody, err := json.Marshal(requestBody)
 	if err != nil {
-		t.Fatalf("Failed to marshal JSON: %v", err)
+		suite.T().Fatalf("Failed to marshal JSON: %v", err)
 	}
 
 	api := "/api/v1/games"
-	resp := requestJson(t, api, jsonBody)
+	resp := suite.requestJson(api, jsonBody)
 
-	assert.Equal(t, 200, resp.StatusCode)
+	assert.Equal(suite.T(), 200, resp.StatusCode)
 
-	responseJson := responseJson(t, resp)
+	responseJson := suite.responseJson(resp)
 
-	assert.NotNil(t, responseJson["Token"], "JSON response should contain a 'Token' field")
-	assert.NotNil(t, responseJson["Id"], "JSON response should contain a 'Id' field")
+	assert.NotNil(suite.T(), responseJson["Token"], "JSON response should contain a 'Token' field")
+	assert.NotNil(suite.T(), responseJson["Id"], "JSON response should contain a 'Id' field")
 
 	// 驗證Game內的玩家都持有identity
-	game, _ := gameRepo.GetGameWithPlayers(context.TODO(), int(responseJson["Id"].(float64)))
+	game, _ := suite.gameRepo.GetGameWithPlayers(context.TODO(), int(responseJson["Id"].(float64)))
 
-	assert.NotEmpty(t, game.Players[0].IdentityCard)
-	assert.NotEmpty(t, game.Players[1].IdentityCard)
-	assert.NotEmpty(t, game.Players[2].IdentityCard)
+	assert.NotEmpty(suite.T(), game.Players[0].IdentityCard)
+	assert.NotEmpty(suite.T(), game.Players[1].IdentityCard)
+	assert.NotEmpty(suite.T(), game.Players[2].IdentityCard)
 
 	for _, player := range game.Players {
-		playerCards, _ := playerRepo.GetPlayerWithPlayerCards(context.TODO(), player.Id)
-		assert.NotEmpty(t, playerCards.PlayerCards)
+		playerCards, _ := suite.playerRepo.GetPlayerWithPlayerCards(context.TODO(), player.Id)
+		assert.NotEmpty(suite.T(), playerCards.PlayerCards)
 	}
 }
 
-// Helper functions
 type Player struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
@@ -115,29 +49,4 @@ type Player struct {
 
 type Request struct {
 	Players []Player `json:"players"`
-}
-
-func responseJson(t *testing.T, resp *http.Response) map[string]interface{} {
-	var responseMap map[string]interface{}
-	err := json.NewDecoder(resp.Body).Decode(&responseMap)
-	if err != nil {
-		t.Fatalf("Failed to decode JSON: %v", err)
-	}
-	return responseMap
-}
-
-func requestJson(t *testing.T, api string, jsonBody []byte) *http.Response {
-	req, err := http.NewRequest(http.MethodPost, serverURL+api, bytes.NewBuffer(jsonBody))
-	if err != nil {
-		t.Fatalf("Failed to send request: %v", err)
-	}
-
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return resp
 }
