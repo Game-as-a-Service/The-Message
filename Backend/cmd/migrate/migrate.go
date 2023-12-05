@@ -3,15 +3,26 @@
 package main
 
 import (
+	"fmt"
 	"github.com/Game-as-a-Service/The-Message/config"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
-	_ "github.com/joho/godotenv/autoload"
 	"gorm.io/gorm"
 )
 
 func main() {
-	db := config.InitDB()
-	MigrationMysql(db)
+	m, err := config.NewMigration()
+	if err != nil {
+		panic(err)
+	}
+
+	err = m.Up()
+	if err != nil {
+		if err.Error() == "no change" {
+			fmt.Println("no change")
+			return
+		}
+		panic(err)
+	}
 }
 
 func MigrationMysql(db *gorm.DB) {

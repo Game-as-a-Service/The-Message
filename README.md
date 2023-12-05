@@ -13,14 +13,19 @@ cd Backend
 docker-compose up -d
 ```
 
-- 進行 DB 資料表清空與重新建置
+- 進行 DB 資料表rollback
 ```bash
-go run ./cmd/migrate/fresh.go
+go run ./cmd/migrate/rollback.go
 ```
 
 - 進行 DB Migration
 ```bash
 go run ./cmd/migrate/migrate.go
+```
+
+- 進行 DB 資料表清空與重新建置
+```bash
+go run ./cmd/migrate/refresh.go
 ```
 
 - 進行 DB Seeder
