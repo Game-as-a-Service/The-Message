@@ -9,5 +9,6 @@ import (
 
 func main() {
 	config.RunRefresh()
-	seeders.Run()
+	db := config.NewDatabase()
+	seeders.Run(db)
 }

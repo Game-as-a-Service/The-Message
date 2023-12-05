@@ -5,12 +5,20 @@ package main
 import (
 	"fmt"
 	"github.com/Game-as-a-Service/The-Message/config"
-	"github.com/Game-as-a-Service/The-Message/service/repository"
-	"gorm.io/gorm"
+	"net/url"
+	"os"
 )
 
 func main() {
-	m, err := config.NewMigration()
+	dir, _ := os.Getwd()
+	sourceURL := "file://" + dir + "/database/migrations"
+
+	dsn := config.BaseDSN()
+	val := url.Values{}
+	val.Add("multiStatements", "true")
+	dsn = fmt.Sprintf("%s?%s", dsn, val.Encode())
+
+	m, err := config.NewMigration(dsn, sourceURL)
 	if err != nil {
 		panic(err)
 	}
@@ -22,51 +30,5 @@ func main() {
 			return
 		}
 		panic(err)
-	}
-}
-
-func MigrationMysql(db *gorm.DB) {
-	err := db.AutoMigrate(&repository.Game{})
-	if err != nil {
-		return
-	}
-	err = db.AutoMigrate(&repository.Player{})
-	if err != nil {
-		return
-	}
-	err = db.AutoMigrate(&repository.Card{})
-	if err != nil {
-		return
-	}
-	err = db.AutoMigrate(&repository.Deck{})
-	if err != nil {
-		return
-	}
-	err = db.AutoMigrate(&repository.PlayerCard{})
-	if err != nil {
-		return
-	}
-}
-
-func Migration(db *gorm.DB) {
-	err := db.AutoMigrate(&repository.Game{})
-	if err != nil {
-		return
-	}
-	err = db.AutoMigrate(&repository.Player{})
-	if err != nil {
-		return
-	}
-	err = db.AutoMigrate(&repository.Card{})
-	if err != nil {
-		return
-	}
-	err = db.AutoMigrate(&repository.Deck{})
-	if err != nil {
-		return
-	}
-	err = db.AutoMigrate(&repository.PlayerCard{})
-	if err != nil {
-		return
 	}
 }
