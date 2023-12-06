@@ -55,6 +55,13 @@ func main() {
 			Service: gameService,
 		},
 	)
+
+	// Register the heartbeat handler
+	http.RegisterHeartbeatHandler(
+		&http.HeartbeatHandler{
+			Engine: engine,
+		})
+
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	err := engine.Run(":8080")
