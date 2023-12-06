@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/Game-as-a-Service/The-Message/service/request"
 	"net/http"
 	"strconv"
 
@@ -32,18 +33,19 @@ func RegisterPlayerHandler(opts *PlayerHandlerOptions) {
 // @Accept json
 // @Produce json
 // @Param playerId path int true "Player ID"
-// @Param card_id body int true "Card ID"
-// @Success 200 {object} string
+// @Param card_id body request.PlayCardRequest true "Card ID"
+// @Success 200 {object} request.PlayCardResponse
 // @Router /api/v1/players/{playerId}/player-cards [post]
 func (p *PlayerHandler) PlayCard(c *gin.Context) {
 	playerId, _ := strconv.Atoi(c.Param("playerId"))
-	json := make(map[string]int)
-	err := c.BindJSON(&json)
-	if err != nil {
+	var req request.PlayCardRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	result, err := p.playerService.PlayCard(c, playerId, json["card_id"])
+	result, err := p.playerService.PlayCard(c, playerId, req.CardID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return

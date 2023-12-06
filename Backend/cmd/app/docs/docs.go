@@ -48,6 +48,47 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/players/{playerId}/player-cards": {
+            "post": {
+                "description": "Play a card",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "players"
+                ],
+                "summary": "Play a card",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "playerId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Card ID",
+                        "name": "card_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.PlayCardRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/request.PlayCardResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -70,6 +111,22 @@ const docTemplate = `{
                 },
                 "token": {
                     "type": "string"
+                }
+            }
+        },
+        "request.PlayCardRequest": {
+            "type": "object",
+            "properties": {
+                "card_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "request.PlayCardResponse": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "type": "boolean"
                 }
             }
         },
