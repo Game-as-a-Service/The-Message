@@ -95,18 +95,21 @@ func (p *PlayerService) PlayCard(c *gin.Context, playerId int, cardId int) (bool
 		return false, err
 	}
 
-	cardType := "hand"
-
-	cards, err := p.PlayerCardRepo.GetPlayerCardsByPlayerId(c, player.Id, player.GameId, cardType, cardId)
+	cards, err := p.PlayerCardRepo.GetPlayerCards(c, &repository.PlayerCard{
+		PlayerId: player.Id,
+		GameId:   player.GameId,
+		Type:     "hand",
+		CardId:   cardId,
+	})
 	if err != nil {
 		return false, err
 	}
 
-	if len(cards) == 0 {
+	if len(*cards) == 0 {
 		return false, nil
 	}
 
-	err = p.PlayerCardRepo.DeletePlayerCard(c, cards[0].Id)
+	err = p.PlayerCardRepo.DeletePlayerCard(c, (*cards)[0].Id)
 	if err != nil {
 		return false, err
 	}

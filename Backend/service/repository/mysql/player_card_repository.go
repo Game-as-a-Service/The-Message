@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"context"
-
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"gorm.io/gorm"
 )
@@ -63,14 +62,12 @@ func (p PlayerCardRepository) DeletePlayerCard(ctx context.Context, id int) erro
 	return nil
 }
 
-func (p *PlayerCardRepository) GetPlayerCardsByPlayerId(ctx context.Context, id int, gameId int, cardType string, cardId int) ([]*repository.PlayerCard, error) {
-
-	var cards []*repository.PlayerCard
-	result := p.db.Preload("Card").Find(&cards, "player_id = ? and type = ? and game_id = ? and card_id = ?", id, cardType, gameId, cardId)
-
+func (p *PlayerCardRepository) GetPlayerCards(ctx context.Context, playerCard *repository.PlayerCard) (*[]repository.PlayerCard, error) {
+	var playerCards *[]repository.PlayerCard
+	result := p.db.Model(&repository.PlayerCard{}).Preload("Card").Where(&playerCard).Find(&playerCards)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	return cards, nil
+	return playerCards, nil
 }
