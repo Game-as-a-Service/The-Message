@@ -33,6 +33,9 @@ type IntegrationTestSuite struct {
 	server     *httptest.Server
 	gameRepo   repository.GameRepository
 	playerRepo repository.PlayerRepository
+	cardRepo   repository.CardRepository
+	gameServ   *service.GameService
+	playerServ *service.PlayerService
 }
 
 func (suite *IntegrationTestSuite) SetupSuite() {
@@ -113,13 +116,21 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 		},
 	)
 
+	v1.RegisterPlayerHandler(
+		&v1.PlayerHandlerOptions{
+			Engine:  engine,
+			Service: playerService,
+		},
+	)
+
 	server := httptest.NewServer(engine)
 
 	suite.db = db
 	suite.server = server
 	suite.gameRepo = gameRepo
 	suite.playerRepo = playerRepo
-
+	suite.gameServ = &gameService
+	suite.playerServ = &playerService
 }
 
 func (suite *IntegrationTestSuite) TearDownSuite() {

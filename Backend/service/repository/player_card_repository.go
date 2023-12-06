@@ -25,4 +25,5 @@ type PlayerCardRepository interface {
 	GetPlayerCardsByGameId(ctx context.Context, id int) ([]*PlayerCard, error)
 	CreatePlayerCard(ctx context.Context, card *PlayerCard) (*PlayerCard, error)
 	DeletePlayerCard(ctx context.Context, id int) error
+	GetPlayerCardsByPlayerId(ctx context.Context, id int, gameId int, condition string, cardId int) ([]*PlayerCard, error)
 }

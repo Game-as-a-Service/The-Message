@@ -12,7 +12,7 @@ func (suite *IntegrationTestSuite) TestStartGameE2E() {
 		{ID: "6498112b26b40d440b9a90ce", Name: "B"},
 		{ID: "6499df157fed0c21a4fd0425", Name: "C"},
 	}
-	requestBody := Request{Players: players}
+	requestBody := StartGameRequest{Players: players}
 
 	jsonBody, err := json.Marshal(requestBody)
 	if err != nil {
@@ -47,6 +47,6 @@ type Player struct {
 	Name string `json:"name"`
 }
 
-type Request struct {
+type StartGameRequest struct {
 	Players []Player `json:"players"`
 }
