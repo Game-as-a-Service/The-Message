@@ -3,6 +3,7 @@ module github.com/Game-as-a-Service/The-Message
 go 1.21
 
 require (
+	github.com/bxcodec/faker/v3 v3.8.1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/joho/godotenv v1.5.1

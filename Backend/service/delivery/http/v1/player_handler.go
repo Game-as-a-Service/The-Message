@@ -41,7 +41,7 @@ func (p *PlayerHandler) GetPlayerCards(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
-	// var cards_Ids []string
+
 	player_cards := []map[string]interface{}{}
 
 	for _, card := range cards {
