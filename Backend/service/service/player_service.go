@@ -90,11 +90,12 @@ func (p *PlayerService) CreatePlayerCard(c context.Context, card *repository.Pla
 
 func (p *PlayerService) GetPlayerCardsByPlayerId(c context.Context, id int) ([]*repository.PlayerCard, error) {
 	player, err := p.PlayerRepo.GetPlayer(c, id)
+	game, err := p.GameRepo.GetGameWithPlayers(c, id)
 	if err != nil {
 		return nil, err
 	}
 
-	cards, err := p.PlayerCardRepo.GetPlayerCardsByPlayerId(c, player.Id)
+	cards, err := p.PlayerCardRepo.GetPlayerCardsByPlayerId(c, player.Id, game.Id)
 
 	if err != nil {
 		return nil, err

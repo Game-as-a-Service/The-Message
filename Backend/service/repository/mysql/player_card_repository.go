@@ -63,10 +63,10 @@ func (p PlayerCardRepository) DeletePlayerCard(ctx context.Context, id int) erro
 	return nil
 }
 
-func (p *PlayerCardRepository) GetPlayerCardsByPlayerId(ctx context.Context, id int) ([]*repository.PlayerCard, error) {
+func (p *PlayerCardRepository) GetPlayerCardsByPlayerId(ctx context.Context, id int, gid int) ([]*repository.PlayerCard, error) {
 
 	var cards []*repository.PlayerCard
-	result := p.db.Find(&cards, "player_id = ?", id)
+	result := p.db.Find(&cards, "player_id = ? AND game_id = ?", id, gid)
 
 	if result.Error != nil {
 		return nil, result.Error
