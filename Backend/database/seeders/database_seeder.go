@@ -1,10 +1,9 @@
 package seeders
 
 import (
-	"github.com/Game-as-a-Service/The-Message/config"
+	"gorm.io/gorm"
 )
 
-func Run() {
-	db := config.NewDatabase()
+func Run(db *gorm.DB) {
 	SeederCards(db)
 }

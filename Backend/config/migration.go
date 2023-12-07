@@ -3,27 +3,16 @@ package config
 import (
 	"database/sql"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/joho/godotenv/autoload"
 	"net/url"
 	"os"
-
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func NewMigration() (*migrate.Migrate, error) {
-	dir, _ := os.Getwd()
-	sourceURL := "file://" + dir + "/database/migrations"
-
-	dsn := BaseDSN()
-
-	val := url.Values{}
-	val.Add("multiStatements", "true")
-
-	dsn = fmt.Sprintf("%s?%s", dsn, val.Encode())
-
+func NewMigration(dsn string, sourceURL string) (*migrate.Migrate, error) {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, err
@@ -52,7 +41,15 @@ func NewMigration() (*migrate.Migrate, error) {
 }
 
 func RunRefresh() {
-	m, err := NewMigration()
+	dir, _ := os.Getwd()
+	sourceURL := "file://" + dir + "/database/migrations"
+
+	dsn := BaseDSN()
+	val := url.Values{}
+	val.Add("multiStatements", "true")
+	dsn = fmt.Sprintf("%s?%s", dsn, val.Encode())
+
+	m, err := NewMigration(dsn, sourceURL)
 	if err != nil {
 		panic(err)
 	}

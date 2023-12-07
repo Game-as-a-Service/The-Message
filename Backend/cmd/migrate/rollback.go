@@ -3,12 +3,22 @@
 package main
 
 import (
+	"fmt"
 	"github.com/Game-as-a-Service/The-Message/config"
-	_ "github.com/joho/godotenv/autoload"
+	"net/url"
+	"os"
 )
 
 func main() {
-	m, err := config.NewMigration()
+	dir, _ := os.Getwd()
+	sourceURL := "file://" + dir + "/database/migrations"
+
+	dsn := config.BaseDSN()
+	val := url.Values{}
+	val.Add("multiStatements", "true")
+	dsn = fmt.Sprintf("%s?%s", dsn, val.Encode())
+
+	m, err := config.NewMigration(dsn, sourceURL)
 	if err != nil {
 		panic(err)
 	}
