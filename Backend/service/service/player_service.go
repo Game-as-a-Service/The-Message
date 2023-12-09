@@ -12,20 +12,23 @@ import (
 type PlayerService struct {
 	PlayerRepo     repository.PlayerRepository
 	PlayerCardRepo repository.PlayerCardRepository
-	GameRepo       repository.GameRepository
+	// GameRepo       repository.GameRepository
+	// CardRepo       repository.CardRepository
 }
 
 type PlayerServiceOptions struct {
 	PlayerRepo     repository.PlayerRepository
 	PlayerCardRepo repository.PlayerCardRepository
-	GameRepo       repository.GameRepository
+	// GameRepo       repository.GameRepository
+	// CardRepo       repository.CardRepository
 }
 
 func NewPlayerService(opts *PlayerServiceOptions) PlayerService {
 	return PlayerService{
 		PlayerRepo:     opts.PlayerRepo,
 		PlayerCardRepo: opts.PlayerCardRepo,
-		GameRepo:       opts.GameRepo,
+		// 	GameRepo:       opts.GameRepo,
+		// 	CardRepo:       opts.CardRepo,
 	}
 }
 
@@ -86,19 +89,4 @@ func (p *PlayerService) CreatePlayerCard(c context.Context, card *repository.Pla
 		return err
 	}
 	return nil
-}
-
-func (p *PlayerService) GetPlayerCardsByPlayerId(c context.Context, id int) ([]*repository.PlayerCard, error) {
-	player, err := p.PlayerRepo.GetPlayer(c, id)
-	game, err := p.GameRepo.GetGameWithPlayers(c, id)
-	if err != nil {
-		return nil, err
-	}
-
-	cards, err := p.PlayerCardRepo.GetPlayerCardsByPlayerId(c, player.Id, game.Id)
-
-	if err != nil {
-		return nil, err
-	}
-	return cards, nil
 }

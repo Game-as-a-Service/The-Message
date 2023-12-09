@@ -1,56 +1,73 @@
 package e2e
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
-	"testing"
 
-	v1 "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
-
-	"github.com/gin-gonic/gin"
+	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetPlayerCards(t *testing.T) {
-	player := &PlayerCard{
-		ID:       "1",
-		PlayerID: "player1",
-		GameID:   "game1",
-		CardID:   "card1",
-		Type:     "type1",
+func (suite *IntegrationTestSuite) TestGetPlayerCards() {
+
+	// given
+	game := repository.Game{}
+	_, err := suite.gameRepo.CreateGame(context.TODO(), &game)
+	player := repository.Player{
+		Name:         "player1",
+		GameId:       1,
+		IdentityCard: "醬油",
+	}
+	_, err = suite.playerRepo.CreatePlayer(context.TODO(), &player)
+	if err != nil {
+		panic(err)
 	}
 
-	// Create a new Gin router
-	router := gin.Default()
-
-	// Create a new PlayerHandler instance
-	playerHandler := &v1.PlayerHandler{}
-
-	// Define the request
-	playerID := player.ID // Replace with a valid player ID
-	req, _ := http.NewRequest(http.MethodGet, "/players/"+playerID+"/cards", nil)
-	router.GET("/players/:playerId/cards", playerHandler.GetPlayerCards)
-
-	// Create a test response recorder
-	w := httptest.NewRecorder()
-
-	// Perform the request
-	router.ServeHTTP(w, req)
-
-	// Check the response status code
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	// Parse the response body
-	var responseBody map[string]interface{}
-	err := json.Unmarshal(w.Body.Bytes(), &responseBody)
-	assert.NoError(t, err)
-
-	// Assert the expected response
-	expectedResponse := map[string]interface{}{
-		"player_cards": []map[string]interface{}{},
+	_, err = suite.playerCardRepo.CreatePlayerCard(context.TODO(), &repository.PlayerCard{
+		PlayerId: 1,
+		GameId:   1,
+		CardId:   1,
+		Type:     "hand",
+	})
+	if err != nil {
+		panic(err)
 	}
-	assert.Equal(t, expectedResponse, responseBody)
+
+	// when
+	api := "/api/v1/player/1/player-cards/"
+	resp := suite.requestJson(api, nil, http.MethodGet)
+	response := suite.responseTest(resp)
+
+	// then
+	assert.Equal(suite.T(), 200, resp.StatusCode)
+
+	jsonStr1 := `{
+		"player_cards": [
+			{
+				"color": "",
+				"id": 1,
+				"name": ""
+			}
+		]
+	}`
+
+	playerCard := map[string]interface{}{
+		"color": "",
+		"id":    1,
+		"name":  "",
+	}
+
+	playerCards := map[string]interface{}{
+		"player_cards": []interface{}{playerCard},
+	}
+
+	err = json.Unmarshal([]byte(jsonStr1), &playerCards)
+	if err != nil {
+		panic(err)
+	}
+
+	assert.Equal(suite.T(), response, playerCards)
 }
 
 type PlayerCard struct {
@@ -59,4 +76,8 @@ type PlayerCard struct {
 	GameID   string `json:"game_id"`
 	CardID   string `json:"card_id"`
 	Type     string `json:"type"`
+}
+
+type Request_p struct {
+	Player Player `json:"player"`
 }

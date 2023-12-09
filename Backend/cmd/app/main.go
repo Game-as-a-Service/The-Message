@@ -27,7 +27,10 @@ func main() {
 	playerCardRepo := mysqlRepo.NewPlayerCardRepository(db)
 
 	cardService := service.NewCardService(&service.CardServiceOptions{
-		CardRepo: cardRepo,
+		CardRepo:       cardRepo,
+		PlayerRepo:     playerRepo,
+		PlayerCardRepo: playerCardRepo,
+		GameRepo:       gameRepo,
 	})
 
 	deckService := service.NewDeckService(&service.DeckServiceOptions{
@@ -61,10 +64,10 @@ func main() {
 		&http.HeartbeatHandler{
 			Engine: engine,
 		})
-	http.RegisterPlayerHandler(
-		&http.PlayerHandlerOptions{
+	http.RegisterCardHandler(
+		&http.CardHandlerOptions{
 			Engine:  engine,
-			Service: playerService,
+			Service: cardService,
 		},
 	)
 

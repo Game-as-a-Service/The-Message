@@ -17,8 +17,8 @@ type PlayerCard struct {
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoCreateTime"`
 	DeletedAt gorm.DeletedAt
-	Card      Card
-	Player    Player
+	Card      Card   `gorm:"foreignKey:CardId"`
+	Player    Player `gorm:"foreignKey:PlayerId"`
 }
 
 type PlayerCardRepository interface {
@@ -26,5 +26,4 @@ type PlayerCardRepository interface {
 	GetPlayerCardsByGameId(ctx context.Context, id int) ([]*PlayerCard, error)
 	CreatePlayerCard(ctx context.Context, card *PlayerCard) (*PlayerCard, error)
 	DeletePlayerCard(ctx context.Context, id int) error
-	GetPlayerCardsByPlayerId(ctx context.Context, id int, gid int) ([]*PlayerCard, error)
 }
