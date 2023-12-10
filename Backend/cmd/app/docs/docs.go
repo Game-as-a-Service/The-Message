@@ -49,7 +49,27 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/player_cards/{id}": {
+        "/api/v1/heartbeat": {
+            "get": {
+                "description": "Check if the server is alive",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "heartbeat"
+                ],
+                "summary": "Check if the server is alive",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/player/{id}/player-cards/": {
             "get": {
                 "description": "GetPlayerCardsByPlayerId",
                 "produces": [
@@ -105,10 +125,11 @@ const docTemplate = `{
         "request.PlayerCardsResponse": {
             "type": "object",
             "properties": {
-                "cards": {
+                "player_cards": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "type": "object",
+                        "additionalProperties": true
                     }
                 }
             }

@@ -15,9 +15,10 @@ definitions:
     type: object
   request.PlayerCardsResponse:
     properties:
-      cards:
+      player_cards:
         items:
-          type: string
+          additionalProperties: true
+          type: object
         type: array
     type: object
   request.PlayerInfo:
@@ -55,7 +56,20 @@ paths:
       summary: Start a new game
       tags:
       - games
-  /api/v1/player_cards/{id}:
+  /api/v1/heartbeat:
+    get:
+      consumes:
+      - application/json
+      description: Check if the server is alive
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Check if the server is alive
+      tags:
+      - heartbeat
+  /api/v1/player/{id}/player-cards/:
     get:
       description: GetPlayerCardsByPlayerId
       parameters:

@@ -34,7 +34,7 @@ func RegisterCardHandler(opts *CardHandlerOptions) {
 // @Produce json
 // @Param id path int true "Player ID"
 // @Success 200 {object} request.PlayerCardsResponse
-// @Router /api/v1/player_cards/{id} [get]
+// @Router /api/v1/player/{id}/player-cards/ [get]
 func (p *CardHandler) GetPlayerCards(c *gin.Context) {
 	playerId, _ := strconv.Atoi(c.Param("playerId"))
 	player_cards, err := p.cardService.GetPlayerCardsByPlayerId(c, playerId)

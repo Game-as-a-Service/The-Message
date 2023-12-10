@@ -1,5 +1,5 @@
 package request
 
 type PlayerCardsResponse struct {
-	Cards []string `json:"cards"`
+	Player_cards []map[string]interface{} `json:"player_cards"`
 }
