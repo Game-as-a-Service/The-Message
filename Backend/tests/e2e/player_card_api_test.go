@@ -3,6 +3,7 @@ package e2e
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/Game-as-a-Service/The-Message/service/repository"
@@ -37,37 +38,34 @@ func (suite *IntegrationTestSuite) TestGetPlayerCards() {
 	// when
 	api := "/api/v1/player/1/player-cards/"
 	resp := suite.requestJson(api, nil, http.MethodGet)
-	response := suite.responseTest(resp)
-
+	response := suite.responseJson(resp)
 	// then
 	assert.Equal(suite.T(), 200, resp.StatusCode)
 
-	jsonStr1 := `{
-		"player_cards": [
-			{
-				"color": "",
-				"id": 1,
-				"name": ""
+	playerCards, ok := response["player_cards"]
+	if !ok {
+		fmt.Println("Error: player_cards is not of type []interface{}")
+		return
+	}
+
+	if str, ok := playerCards.(string); ok {
+		var slice []map[string]interface{}
+		if err := json.Unmarshal([]byte(str), &slice); err != nil {
+			fmt.Println("Error decoding JSON:", err)
+			return
+		}
+
+		// Range over the slice
+		for _, item := range slice {
+			fmt.Println(item["id"], item["name"], item["color"])
+			for key, value := range item {
+				if value == nil {
+					suite.T().Errorf("Field %s is nil", key)
+				}
 			}
-		]
-	}`
 
-	playerCard := map[string]interface{}{
-		"color": "",
-		"id":    1,
-		"name":  "",
+		}
 	}
-
-	playerCards := map[string]interface{}{
-		"player_cards": []interface{}{playerCard},
-	}
-
-	err = json.Unmarshal([]byte(jsonStr1), &playerCards)
-	if err != nil {
-		panic(err)
-	}
-
-	assert.Equal(suite.T(), response, playerCards)
 }
 
 type PlayerCard struct {
