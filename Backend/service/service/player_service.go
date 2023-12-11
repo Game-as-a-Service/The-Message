@@ -12,23 +12,17 @@ import (
 type PlayerService struct {
 	PlayerRepo     repository.PlayerRepository
 	PlayerCardRepo repository.PlayerCardRepository
-	// GameRepo       repository.GameRepository
-	// CardRepo       repository.CardRepository
 }
 
 type PlayerServiceOptions struct {
 	PlayerRepo     repository.PlayerRepository
 	PlayerCardRepo repository.PlayerCardRepository
-	// GameRepo       repository.GameRepository
-	// CardRepo       repository.CardRepository
 }
 
 func NewPlayerService(opts *PlayerServiceOptions) PlayerService {
 	return PlayerService{
 		PlayerRepo:     opts.PlayerRepo,
 		PlayerCardRepo: opts.PlayerCardRepo,
-		// 	GameRepo:       opts.GameRepo,
-		// 	CardRepo:       opts.CardRepo,
 	}
 }
 

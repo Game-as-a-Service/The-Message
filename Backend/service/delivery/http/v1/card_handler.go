@@ -59,6 +59,6 @@ func (p *CardHandler) GetPlayerCards(c *gin.Context) {
 		fmt.Println("Error encoding JSON:", err)
 		return
 	}
-	jsonString := string(jsonData)
-	c.JSON(http.StatusOK, gin.H{"player_cards": jsonString})
+
+	c.JSON(http.StatusOK, gin.H{"player_cards": player_cards_info})
 }
