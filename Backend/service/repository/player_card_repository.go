@@ -2,8 +2,9 @@ package repository
 
 import (
 	"context"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type PlayerCard struct {
@@ -16,8 +17,8 @@ type PlayerCard struct {
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoCreateTime"`
 	DeletedAt gorm.DeletedAt
-	Card      Card
-	Player    Player
+	Card      Card   `gorm:"foreignKey:CardId"`
+	Player    Player `gorm:"foreignKey:PlayerId"`
 }
 
 type PlayerCardRepository interface {

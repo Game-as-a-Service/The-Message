@@ -4,6 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"os"
+	"testing"
+
 	"github.com/Game-as-a-Service/The-Message/config"
 	"github.com/Game-as-a-Service/The-Message/database/seeders"
 	v1 "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
@@ -18,21 +25,18 @@ import (
 	_ "github.com/mattes/migrate/source/file"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"os"
-	"testing"
 )
 
 type IntegrationTestSuite struct {
 	suite.Suite
-	db         *gorm.DB
-	tx         *gorm.DB
-	server     *httptest.Server
-	gameRepo   repository.GameRepository
-	playerRepo repository.PlayerRepository
+	db             *gorm.DB
+	tx             *gorm.DB
+	server         *httptest.Server
+	gameRepo       repository.GameRepository
+	playerRepo     repository.PlayerRepository
+	playerCardRepo repository.PlayerCardRepository
+	gameServ       *service.GameService
+	playerServ     *service.PlayerService
 }
 
 func (suite *IntegrationTestSuite) SetupSuite() {
@@ -71,8 +75,8 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 			panic(err)
 		}
 	}
-
 	db := config.NewDatabase()
+
 	seeders.SeederCards(db)
 
 	engine := gin.Default()
@@ -84,7 +88,10 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	playerCardRepo := mysqlRepo.NewPlayerCardRepository(db)
 
 	cardService := service.NewCardService(&service.CardServiceOptions{
-		CardRepo: cardRepo,
+		CardRepo:       cardRepo,
+		GameRepo:       gameRepo,
+		PlayerRepo:     playerRepo,
+		PlayerCardRepo: playerCardRepo,
 	})
 
 	deckService := service.NewDeckService(&service.DeckServiceOptions{
@@ -113,12 +120,22 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 		},
 	)
 
+	v1.RegisterCardHandler(
+		&v1.CardHandlerOptions{
+			Engine:  engine,
+			Service: cardService,
+		},
+	)
+
 	server := httptest.NewServer(engine)
 
 	suite.db = db
 	suite.server = server
 	suite.gameRepo = gameRepo
 	suite.playerRepo = playerRepo
+	suite.gameServ = &gameService
+	suite.playerServ = &playerService
+	suite.playerCardRepo = playerCardRepo
 
 }
 
@@ -150,8 +167,8 @@ func (suite *IntegrationTestSuite) responseJson(resp *http.Response) map[string]
 	return responseMap
 }
 
-func (suite *IntegrationTestSuite) requestJson(api string, jsonBody []byte) *http.Response {
-	req, err := http.NewRequest(http.MethodPost, suite.server.URL+api, bytes.NewBuffer(jsonBody))
+func (suite *IntegrationTestSuite) requestJson(api string, jsonBody []byte, method string) *http.Response {
+	req, err := http.NewRequest(method, suite.server.URL+api, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		suite.T().Fatalf("Failed to send request: %v", err)
 	}
@@ -164,4 +181,13 @@ func (suite *IntegrationTestSuite) requestJson(api string, jsonBody []byte) *htt
 	}
 
 	return resp
+}
+
+func (suite *IntegrationTestSuite) responseTest(resp *http.Response) interface{} {
+	var responseMap interface{}
+	err := json.NewDecoder(resp.Body).Decode(&responseMap)
+	if err != nil {
+		suite.T().Fatalf("Failed to decode JSON: %v", err)
+	}
+	return responseMap
 }

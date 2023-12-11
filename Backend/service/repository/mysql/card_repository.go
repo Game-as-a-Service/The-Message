@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"context"
+
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"gorm.io/gorm"
 )
@@ -49,4 +50,27 @@ func (c *CardRepository) GetCards(ctx context.Context) ([]*repository.Card, erro
 	}
 
 	return cards, nil
+}
+
+func (p *CardRepository) GetPlayerCardsByPlayerId(ctx context.Context, id int, gid int) ([]*repository.Card, error) {
+
+	var player_cards []*repository.PlayerCard
+	var cards []*repository.Card
+	result := p.db.Find(&player_cards, "player_id = ? AND game_id = ?", id, gid)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	var cardIDs []int
+	for _, pc := range player_cards {
+		cardIDs = append(cardIDs, pc.CardId)
+	}
+
+	result = p.db.Find(&cards, "id IN ?", cardIDs)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return cards, nil
+
 }

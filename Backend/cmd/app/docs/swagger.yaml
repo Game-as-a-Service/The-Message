@@ -1,0 +1,91 @@
+definitions:
+  request.CreateGameRequest:
+    properties:
+      players:
+        items:
+          $ref: '#/definitions/request.PlayerInfo'
+        type: array
+    type: object
+  request.CreateGameResponse:
+    properties:
+      id:
+        type: string
+      token:
+        type: string
+    type: object
+  request.PlayerCardsResponse:
+    properties:
+      player_cards:
+        items:
+          additionalProperties: true
+          type: object
+        type: array
+    type: object
+  request.PlayerInfo:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+host: 127.0.0.1:8080
+info:
+  contact: {}
+  description: This is an online version of the "The Message" board game backend API
+  title: The Message API
+paths:
+  /api/v1/games:
+    post:
+      consumes:
+      - application/json
+      description: Start a new game
+      parameters:
+      - description: Players
+        in: body
+        name: players
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateGameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/request.CreateGameResponse'
+      summary: Start a new game
+      tags:
+      - games
+  /api/v1/heartbeat:
+    get:
+      consumes:
+      - application/json
+      description: Check if the server is alive
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Check if the server is alive
+      tags:
+      - heartbeat
+  /api/v1/player/{id}/player-cards/:
+    get:
+      description: GetPlayerCardsByPlayerId
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/request.PlayerCardsResponse'
+      summary: GetPlayerCards
+      tags:
+      - player_cards
+swagger: "2.0"

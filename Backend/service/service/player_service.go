@@ -2,10 +2,11 @@ package service
 
 import (
 	"context"
+	"math/rand"
+
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"github.com/Game-as-a-Service/The-Message/service/request"
-	"math/rand"
 )
 
 type PlayerService struct {
