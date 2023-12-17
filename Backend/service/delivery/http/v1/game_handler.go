@@ -1,6 +1,9 @@
 package http
 
 import (
+	"encoding/json"
+	"io"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -11,19 +14,23 @@ import (
 
 type GameHandler struct {
 	gameService service.GameService
+	SSE         *Event
 }
 
 type GameHandlerOptions struct {
 	Engine  *gin.Engine
 	Service service.GameService
+	SSE     *Event
 }
 
 func RegisterGameHandler(opts *GameHandlerOptions) {
 	handler := &GameHandler{
 		gameService: opts.Service,
+		SSE:         opts.SSE,
 	}
 
 	opts.Engine.POST("/api/v1/games", handler.StartGame)
+	opts.Engine.GET("/api/v1/games/:gameId/events", HeadersMiddleware(), opts.SSE.serveHTTP(), handler.GameEvent)
 }
 
 // StartGame godoc
@@ -64,6 +71,13 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		return
 	}
 
+	g.SSE.Message <- gin.H{
+		"message": "Game started",
+		"status":  "started",
+		"gameId":  strconv.Itoa(game.Id),
+		//"game":    game,
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"Id":    game.Id,
 		"Token": game.Token,
@@ -97,4 +111,52 @@ func (g *GameHandler) DeleteGame(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Game deleted"})
+}
+
+// GameEvent godoc
+// @Summary Get game events
+// @Description Get game events
+// @Tags games
+// @Accept json
+// @Produce json
+// @Param gameId path int true "Game ID"
+// @Success 200 {object} GameSSERequest
+// @Router /api/v1/games/{gameId}/events [get]
+func (g *GameHandler) GameEvent(c *gin.Context) {
+	gameId, err := strconv.Atoi(c.Param("gameId"))
+	if err != nil {
+		return
+	}
+
+	v, ok := c.Get("clientChan")
+	if !ok {
+		return
+	}
+
+	clientChan, ok := v.(ClientChan)
+	if !ok {
+		return
+	}
+
+	c.Stream(func(w io.Writer) bool {
+		if msg, ok := <-clientChan; ok {
+			data := GameSSERequest{}
+			err := json.Unmarshal([]byte(msg), &data)
+			if err != nil {
+				log.Fatalf(err.Error())
+			}
+
+			if data.GameId == gameId {
+				c.SSEvent("message", msg)
+			}
+			return true
+		}
+		return false
+	})
+}
+
+type GameSSERequest struct {
+	GameId  int    `json:"gameId,string"`
+	Message string `json:"message"`
+	Status  string `json:"status"`
 }

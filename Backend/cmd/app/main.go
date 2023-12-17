@@ -19,6 +19,7 @@ func main() {
 	db := config.NewDatabase()
 
 	engine := gin.Default()
+	sse := http.NewSSEServer()
 
 	gameRepo := mysqlRepo.NewGameRepository(db)
 	playerRepo := mysqlRepo.NewPlayerRepository(db)
@@ -56,6 +57,7 @@ func main() {
 		&http.GameHandlerOptions{
 			Engine:  engine,
 			Service: gameService,
+			SSE:     sse,
 		},
 	)
 

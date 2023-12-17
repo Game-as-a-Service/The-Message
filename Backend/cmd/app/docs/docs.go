@@ -97,9 +97,56 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/games/{gameId}/events": {
+            "get": {
+                "description": "Get game events",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "games"
+                ],
+                "summary": "Get game events",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Game ID",
+                        "name": "gameId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.GameSSERequest"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "http.GameSSERequest": {
+            "type": "object",
+            "properties": {
+                "gameId": {
+                    "type": "string",
+                    "example": "0"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "request.CreateGameRequest": {
             "type": "object",
             "properties": {

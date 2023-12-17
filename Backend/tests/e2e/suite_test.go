@@ -79,6 +79,7 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	seeders.SeederCards(db)
 
 	engine := gin.Default()
+	sse := v1.NewSSEServer()
 
 	gameRepo := mysqlRepo.NewGameRepository(db)
 	playerRepo := mysqlRepo.NewPlayerRepository(db)
@@ -116,6 +117,7 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 		&v1.GameHandlerOptions{
 			Engine:  engine,
 			Service: gameService,
+			SSE:     sse,
 		},
 	)
 

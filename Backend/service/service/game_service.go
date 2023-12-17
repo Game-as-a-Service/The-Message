@@ -42,6 +42,9 @@ func (g *GameService) InitGame(c context.Context) (*repository.Game, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// sent sse
+
 	return game, nil
 }
 
