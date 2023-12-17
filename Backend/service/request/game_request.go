@@ -13,3 +13,11 @@ type CreateGameResponse struct {
 	ID    string `json:"id"`
 	Token string `json:"token"`
 }
+
+type PlayCardResponse struct {
+	Result bool `json:"result"`
+}
+
+type PlayCardRequest struct {
+	CardID int `json:"card_id"`
+}
