@@ -37,28 +37,28 @@ func RegisterCardHandler(opts *CardHandlerOptions) {
 // @Router /api/v1/player/{id}/player-cards/ [get]
 func (p *CardHandler) GetPlayerCards(c *gin.Context) {
 	playerId, _ := strconv.Atoi(c.Param("playerId"))
-	player_cards, err := p.cardService.GetPlayerCardsByPlayerId(c, playerId)
+	playerCards, err := p.cardService.GetPlayerCardsByPlayerId(c, playerId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
-	player_cards_info := []map[string]interface{}{}
+	playerCardsInfo := []map[string]interface{}{}
 
-	for _, card := range player_cards {
+	for _, card := range playerCards {
 		dict := map[string]interface{}{
 			"id":    card.Id,
 			"name":  card.Name,
 			"color": card.Color,
 		}
-		player_cards_info = append(player_cards_info, dict)
+		playerCardsInfo = append(playerCardsInfo, dict)
 	}
-	jsonData, err := json.Marshal(player_cards_info)
+	jsonData, err := json.Marshal(playerCardsInfo)
 	fmt.Println(jsonData)
 	if err != nil {
 		fmt.Println("Error encoding JSON:", err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"player_cards": player_cards_info})
+	c.JSON(http.StatusOK, gin.H{"player_cards": playerCardsInfo})
 }
