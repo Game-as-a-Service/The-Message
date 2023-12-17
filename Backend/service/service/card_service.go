@@ -37,14 +37,14 @@ func (c *CardService) GetCards(ctx context.Context) ([]*repository.Card, error) 
 	return cards, nil
 }
 
-func (p *CardService) GetPlayerCardsByPlayerId(c context.Context, id int) ([]*repository.Card, error) {
-	player, err := p.PlayerRepo.GetPlayer(c, id)
-	game, err := p.GameRepo.GetGameWithPlayers(c, id)
+func (c *CardService) GetPlayerCardsByPlayerId(ctx context.Context, id int) ([]*repository.Card, error) {
+	player, err := c.PlayerRepo.GetPlayer(ctx, id)
+	game, err := c.GameRepo.GetGameWithPlayers(ctx, player.GameId)
 	if err != nil {
 		return nil, err
 	}
 
-	cards, err := p.CardRepo.GetPlayerCardsByPlayerId(c, player.Id, game.Id)
+	cards, err := c.CardRepo.GetPlayerCardsByPlayerId(ctx, player.Id, game.Id)
 
 	if err != nil {
 		return nil, err

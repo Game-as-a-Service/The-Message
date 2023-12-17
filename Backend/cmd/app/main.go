@@ -64,6 +64,7 @@ func main() {
 		&http.HeartbeatHandler{
 			Engine: engine,
 		})
+
 	http.RegisterCardHandler(
 		&http.CardHandlerOptions{
 			Engine:  engine,
@@ -71,6 +72,12 @@ func main() {
 		},
 	)
 
+	http.RegisterPlayerHandler(
+		&http.PlayerHandlerOptions{
+			Engine:  engine,
+			Service: playerService,
+		},
+	)
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	err := engine.Run(":8080")

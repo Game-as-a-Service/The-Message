@@ -62,3 +62,13 @@ func (p PlayerCardRepository) DeletePlayerCard(ctx context.Context, id int) erro
 
 	return nil
 }
+
+func (p *PlayerCardRepository) GetPlayerCards(ctx context.Context, playerCard *repository.PlayerCard) (*[]repository.PlayerCard, error) {
+	var playerCards *[]repository.PlayerCard
+	result := p.db.Model(&repository.PlayerCard{}).Preload("Card").Where(&playerCard).Find(&playerCards)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return playerCards, nil
+}
