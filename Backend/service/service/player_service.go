@@ -2,27 +2,30 @@ package service
 
 import (
 	"context"
-	"math/rand"
-
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"github.com/Game-as-a-Service/The-Message/service/request"
+	"github.com/gin-gonic/gin"
+	"math/rand"
 )
 
 type PlayerService struct {
 	PlayerRepo     repository.PlayerRepository
 	PlayerCardRepo repository.PlayerCardRepository
+	GameRepo       repository.GameRepository
 }
 
 type PlayerServiceOptions struct {
 	PlayerRepo     repository.PlayerRepository
 	PlayerCardRepo repository.PlayerCardRepository
+	GameRepo       repository.GameRepository
 }
 
 func NewPlayerService(opts *PlayerServiceOptions) PlayerService {
 	return PlayerService{
 		PlayerRepo:     opts.PlayerRepo,
 		PlayerCardRepo: opts.PlayerCardRepo,
+		GameRepo:       opts.GameRepo,
 	}
 }
 
@@ -83,4 +86,32 @@ func (p *PlayerService) CreatePlayerCard(c context.Context, card *repository.Pla
 		return err
 	}
 	return nil
+}
+
+func (p *PlayerService) PlayCard(c *gin.Context, playerId int, cardId int) (bool, error) {
+	player, err := p.PlayerRepo.GetPlayer(c, playerId)
+	if err != nil {
+		return false, err
+	}
+
+	cards, err := p.PlayerCardRepo.GetPlayerCards(c, &repository.PlayerCard{
+		PlayerId: player.Id,
+		GameId:   player.GameId,
+		Type:     "hand",
+		CardId:   cardId,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	if len(*cards) == 0 {
+		return false, nil
+	}
+
+	err = p.PlayerCardRepo.DeletePlayerCard(c, (*cards)[0].Id)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }

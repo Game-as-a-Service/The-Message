@@ -4,13 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"os"
-	"testing"
-
 	"github.com/Game-as-a-Service/The-Message/config"
 	"github.com/Game-as-a-Service/The-Message/database/seeders"
 	v1 "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
@@ -25,6 +18,12 @@ import (
 	_ "github.com/mattes/migrate/source/file"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"os"
+	"testing"
 )
 
 type IntegrationTestSuite struct {
@@ -127,6 +126,13 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 		},
 	)
 
+	v1.RegisterPlayerHandler(
+		&v1.PlayerHandlerOptions{
+			Engine:  engine,
+			Service: playerService,
+		},
+	)
+
 	server := httptest.NewServer(engine)
 
 	suite.db = db
@@ -136,7 +142,6 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	suite.gameServ = &gameService
 	suite.playerServ = &playerService
 	suite.playerCardRepo = playerCardRepo
-
 }
 
 func (suite *IntegrationTestSuite) TearDownSuite() {
