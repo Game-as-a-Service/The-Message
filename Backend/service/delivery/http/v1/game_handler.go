@@ -71,10 +71,16 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		return
 	}
 
+	game, err = g.gameService.GetGameById(c, game.Id)
+	if err != nil {
+		return
+	}
+
 	g.SSE.Message <- gin.H{
-		"message": "Game started",
-		"status":  "started",
-		"gameId":  strconv.Itoa(game.Id),
+		"message":     "Game started",
+		"status":      "started",
+		"gameId":      strconv.Itoa(game.Id),
+		"next_player": game.Players[0].Id,
 	}
 
 	c.JSON(http.StatusOK, gin.H{

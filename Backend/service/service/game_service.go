@@ -107,7 +107,7 @@ func (g *GameService) CreateGame(c context.Context, game *repository.Game) (*rep
 }
 
 func (g *GameService) GetGameById(c context.Context, id int) (*repository.Game, error) {
-	game, err := g.GameRepo.GetGameById(c, id)
+	game, err := g.GameRepo.GetGameWithPlayers(c, id)
 	if err != nil {
 		return nil, err
 	}
