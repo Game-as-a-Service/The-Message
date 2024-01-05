@@ -132,6 +132,7 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 		&v1.PlayerHandlerOptions{
 			Engine:  engine,
 			Service: playerService,
+			SSE:     sse,
 		},
 	)
 

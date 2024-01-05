@@ -78,6 +78,7 @@ func main() {
 		&http.PlayerHandlerOptions{
 			Engine:  engine,
 			Service: playerService,
+			SSE:     sse,
 		},
 	)
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

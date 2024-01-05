@@ -75,7 +75,6 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		"message": "Game started",
 		"status":  "started",
 		"gameId":  strconv.Itoa(game.Id),
-		//"game":    game,
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -136,6 +135,12 @@ func (g *GameHandler) GameEvent(c *gin.Context) {
 	clientChan, ok := v.(ClientChan)
 	if !ok {
 		return
+	}
+
+	g.SSE.Message <- gin.H{
+		"message": "這邊要去取得最新的狀態",
+		"status":  "?",
+		"gameId":  strconv.Itoa(gameId),
 	}
 
 	c.Stream(func(w io.Writer) bool {

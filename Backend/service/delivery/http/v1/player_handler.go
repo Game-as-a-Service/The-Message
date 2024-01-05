@@ -11,16 +11,19 @@ import (
 
 type PlayerHandler struct {
 	playerService service.PlayerService
+	SSE           *Event
 }
 
 type PlayerHandlerOptions struct {
 	Engine  *gin.Engine
 	Service service.PlayerService
+	SSE     *Event
 }
 
 func RegisterPlayerHandler(opts *PlayerHandlerOptions) {
 	handler := &PlayerHandler{
 		playerService: opts.Service,
+		SSE:           opts.SSE,
 	}
 
 	opts.Engine.POST("/api/v1/players/:playerId/player-cards", handler.PlayCard)
@@ -49,6 +52,12 @@ func (p *PlayerHandler) PlayCard(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
+	}
+
+	p.SSE.Message <- gin.H{
+		"message": "Game started",
+		"status":  "started",
+		"gameId":  "1", // TODO: get gameId from request
 	}
 
 	c.JSON(http.StatusOK, gin.H{

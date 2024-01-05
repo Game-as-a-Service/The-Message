@@ -43,8 +43,6 @@ func (g *GameService) InitGame(c context.Context) (*repository.Game, error) {
 		return nil, err
 	}
 
-	// sent sse
-
 	return game, nil
 }
 
@@ -122,5 +120,4 @@ func (g *GameService) DeleteGame(c context.Context, id int) error {
 		return err
 	}
 	return nil
-
 }
