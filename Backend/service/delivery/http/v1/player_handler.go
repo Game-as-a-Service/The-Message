@@ -1,8 +1,8 @@
 package http
 
 import (
+	"fmt"
 	"github.com/Game-as-a-Service/The-Message/service/request"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -59,7 +59,7 @@ func (p *PlayerHandler) PlayCard(c *gin.Context) {
 	}
 
 	// TODO to Service
-	if result == false {
+	if result {
 		player, err := p.playerService.PlayerRepo.GetPlayer(c, playerId)
 		game, err := p.gameService.GameRepo.GetGameWithPlayers(c, player.GameId)
 		if err != nil {
@@ -73,26 +73,27 @@ func (p *PlayerHandler) PlayCard(c *gin.Context) {
 				break
 			}
 		}
-		// TODO 這邊要判斷超過index數量進入下一階段
+
 		maxLen := len(game.Players)
 		if currentPlayerIndex+1 >= maxLen {
 			p.SSE.Message <- gin.H{
 				"message":     "傳遞",
 				"status":      "傳遞",
-				"gameId":      game.Id,
+				"game_id":     game.Id,
 				"next_player": game.Players[0].Id,
 			}
 		} else {
 			nextId := game.Players[currentPlayerIndex+1].Id
 
+			message := fmt.Sprintf("玩家: %d 已出牌", nextId)
+
 			p.SSE.Message <- gin.H{
-				"message":     "message",
-				"status":      "command",
-				"gameId":      "2",
+				"message":     message,
+				"status":      "功能",
+				"game_id":     game.Id,
 				"next_player": nextId,
 			}
 		}
-		log.Printf("End")
 	}
 
 	c.JSON(http.StatusOK, gin.H{

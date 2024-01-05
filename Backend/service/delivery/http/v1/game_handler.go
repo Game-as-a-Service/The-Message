@@ -80,7 +80,7 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 	g.SSE.Message <- gin.H{
 		"message":     "Game started",
 		"status":      "started",
-		"gameId":      strconv.Itoa(game.Id),
+		"game_id":     game.Id,
 		"next_player": game.Players[0].Id,
 	}
 
@@ -147,7 +147,7 @@ func (g *GameHandler) GameEvent(c *gin.Context) {
 	g.SSE.Message <- gin.H{
 		"message": "這邊要去取得最新的狀態",
 		"status":  "?",
-		"gameId":  strconv.Itoa(gameId),
+		"game_id": gameId,
 	}
 
 	c.Stream(func(w io.Writer) bool {
@@ -169,7 +169,7 @@ func (g *GameHandler) GameEvent(c *gin.Context) {
 }
 
 type GameSSERequest struct {
-	GameId  int    `json:"gameId,string"`
+	GameId  int    `json:"game_id,int"`
 	Message string `json:"message"`
 	Status  string `json:"status"`
 }

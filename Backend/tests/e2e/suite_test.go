@@ -130,9 +130,10 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 
 	v1.RegisterPlayerHandler(
 		&v1.PlayerHandlerOptions{
-			Engine:  engine,
-			Service: playerService,
-			SSE:     sse,
+			Engine:      engine,
+			Service:     playerService,
+			GameService: gameService,
+			SSE:         sse,
 		},
 	)
 
