@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/Game-as-a-Service/The-Message/service/request"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -11,18 +12,21 @@ import (
 
 type PlayerHandler struct {
 	playerService service.PlayerService
+	gameService   service.GameService
 	SSE           *Event
 }
 
 type PlayerHandlerOptions struct {
-	Engine  *gin.Engine
-	Service service.PlayerService
-	SSE     *Event
+	Engine      *gin.Engine
+	Service     service.PlayerService
+	GameService service.GameService
+	SSE         *Event
 }
 
 func RegisterPlayerHandler(opts *PlayerHandlerOptions) {
 	handler := &PlayerHandler{
 		playerService: opts.Service,
+		gameService:   opts.GameService,
 		SSE:           opts.SSE,
 	}
 
@@ -54,10 +58,41 @@ func (p *PlayerHandler) PlayCard(c *gin.Context) {
 		return
 	}
 
-	p.SSE.Message <- gin.H{
-		"message": "Game started",
-		"status":  "started",
-		"gameId":  "1", // TODO: get gameId from request
+	// TODO to Service
+	if result == false {
+		player, err := p.playerService.PlayerRepo.GetPlayer(c, playerId)
+		game, err := p.gameService.GameRepo.GetGameWithPlayers(c, player.GameId)
+		if err != nil {
+			return
+		}
+
+		var currentPlayerIndex int
+		for index, gPlayer := range game.Players {
+			if gPlayer.Id == playerId {
+				currentPlayerIndex = index
+				break
+			}
+		}
+		// TODO 這邊要判斷超過index數量進入下一階段
+		maxLen := len(game.Players)
+		if currentPlayerIndex+1 >= maxLen {
+			p.SSE.Message <- gin.H{
+				"message":     "傳遞",
+				"status":      "傳遞",
+				"gameId":      game.Id,
+				"next_player": game.Players[0].Id,
+			}
+		} else {
+			nextId := game.Players[currentPlayerIndex+1].Id
+
+			p.SSE.Message <- gin.H{
+				"message":     "message",
+				"status":      "command",
+				"gameId":      "2",
+				"next_player": nextId,
+			}
+		}
+		log.Printf("End")
 	}
 
 	c.JSON(http.StatusOK, gin.H{

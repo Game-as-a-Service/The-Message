@@ -56,6 +56,7 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		return
 	}
 
+	// TODO 這邊可以優化 https://gorm.io/zh_CN/docs/associations.html
 	if err := g.gameService.PlayerService.InitPlayers(c, game, req); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
@@ -151,6 +152,7 @@ func (g *GameHandler) GameEvent(c *gin.Context) {
 
 	c.Stream(func(w io.Writer) bool {
 		if msg, ok := <-clientChan; ok {
+			log.Printf("msg: %+v", msg)
 			data := GameSSERequest{}
 			err := json.Unmarshal([]byte(msg), &data)
 			if err != nil {
