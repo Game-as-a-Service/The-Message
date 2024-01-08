@@ -1,5 +1,6 @@
 # Backend
 
+Backend/cmd/app/docs/swagger.*
 Backend/.env
 /.idea/*
 vendor/

@@ -49,6 +49,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/games/{gameId}/events": {
+            "get": {
+                "description": "Get game events",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "games"
+                ],
+                "summary": "Get game events",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Game ID",
+                        "name": "gameId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.GameSSERequest"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/heartbeat": {
             "get": {
                 "description": "Check if the server is alive",
@@ -98,9 +130,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/games/{gameId}/events": {
-            "get": {
-                "description": "Get game events",
+        "/api/v1/players/{playerId}/player-cards": {
+            "post": {
+                "description": "Play a card",
                 "consumes": [
                     "application/json"
                 ],
@@ -108,23 +140,32 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "games"
+                    "players"
                 ],
-                "summary": "Get game events",
+                "summary": "Play a card",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Game ID",
-                        "name": "gameId",
+                        "description": "Player ID",
+                        "name": "playerId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Card ID",
+                        "name": "card_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.PlayCardRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.GameSSERequest"
+                            "$ref": "#/definitions/request.PlayCardResponse"
                         }
                     }
                 }
@@ -166,6 +207,22 @@ const docTemplate = `{
                 },
                 "token": {
                     "type": "string"
+                }
+            }
+        },
+        "request.PlayCardRequest": {
+            "type": "object",
+            "properties": {
+                "card_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "request.PlayCardResponse": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "type": "boolean"
                 }
             }
         },
