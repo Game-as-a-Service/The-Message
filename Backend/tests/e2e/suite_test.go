@@ -22,7 +22,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
 	"testing"
 )
 
@@ -39,8 +38,7 @@ type IntegrationTestSuite struct {
 }
 
 func (suite *IntegrationTestSuite) SetupSuite() {
-	dir, _ := os.Getwd()
-	sourceURL := "file://" + dir + "/../../database/migrations"
+	sourceURL := config.GetSourceURL()
 
 	err := godotenv.Load("../../.env")
 	if err != nil {
