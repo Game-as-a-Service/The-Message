@@ -13,6 +13,6 @@ CREATE TABLE player_cards
     FOREIGN KEY (player_id) REFERENCES players (id),
     FOREIGN KEY (game_id) REFERENCES games (id),
     FOREIGN KEY (card_id) REFERENCES cards (id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 COMMIT;
