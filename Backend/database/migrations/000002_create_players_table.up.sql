@@ -10,6 +10,6 @@ CREATE TABLE players
     updated_at    DATETIME     NOT NULL,
     deleted_at    DATETIME,
     FOREIGN KEY (game_id) REFERENCES games (id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 COMMIT;
