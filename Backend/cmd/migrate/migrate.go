@@ -6,12 +6,10 @@ import (
 	"fmt"
 	"github.com/Game-as-a-Service/The-Message/config"
 	"net/url"
-	"os"
 )
 
 func main() {
-	dir, _ := os.Getwd()
-	sourceURL := "file://" + dir + "/database/migrations"
+	sourceURL := config.GetSourceURL()
 
 	dsn := config.BaseDSN()
 	val := url.Values{}
