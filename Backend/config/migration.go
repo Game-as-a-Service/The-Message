@@ -70,6 +70,7 @@ func RunRefresh() {
 
 func GetSourceURL() string {
 	dir, _ := os.Getwd()
+	dir = strings.SplitAfter(dir, "Backend")[0]
 	dir = strings.ReplaceAll(dir, "\\", "/")
 
 	sourceURL := "file://" + dir + "/database/migrations"
