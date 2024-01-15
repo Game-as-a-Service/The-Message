@@ -52,6 +52,12 @@ func (p *PlayerHandler) PlayCard(c *gin.Context) {
 		return
 	}
 
+	canPlay, err := p.playerService.CanPlayCard(c, playerId, req.CardID)
+	if !canPlay {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+
 	result, err := p.playerService.PlayCard(c, playerId, req.CardID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})

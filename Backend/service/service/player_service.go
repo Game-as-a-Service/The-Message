@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"github.com/Game-as-a-Service/The-Message/service/request"
@@ -116,4 +117,18 @@ func (p *PlayerService) PlayCard(c *gin.Context, playerId int, cardId int) (bool
 	}
 
 	return true, nil
+}
+
+func (p *PlayerService) CanPlayCard(c *gin.Context, playerId int, cardId int) (bool, error) {
+	player, err := p.PlayerRepo.GetPlayerWithGame(c, playerId)
+	if err != nil {
+		return false, err
+	}
+	if player.Id != player.Game.CurrentPlayerId {
+		err = errors.New("尚未輪到你出牌")
+		return false, err
+	}
+
+	return true, nil
+
 }

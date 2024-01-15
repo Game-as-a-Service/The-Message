@@ -16,6 +16,7 @@ type Player struct {
 	Status       string
 	OrderNumber  int
 	PlayerCards  []PlayerCard
+	Game         *Game     `gorm:"foreignKey:GameId;references:Id"`
 	CreatedAt    time.Time `gorm:"autoCreateTime"`
 	UpdatedAt    time.Time `gorm:"autoCreateTime"`
 	DeletedAt    gorm.DeletedAt
@@ -26,4 +27,5 @@ type PlayerRepository interface {
 	GetPlayer(ctx context.Context, playerId int) (*Player, error)
 	GetPlayersByGameId(ctx context.Context, id int) ([]*Player, error)
 	GetPlayerWithPlayerCards(ctx context.Context, playerId int) (*Player, error)
+	GetPlayerWithGame(ctx context.Context, playerId int) (*Player, error)
 }

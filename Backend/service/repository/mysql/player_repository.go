@@ -53,3 +53,11 @@ func (p *PlayerRepository) GetPlayerWithPlayerCards(ctx context.Context, playerI
 	}
 	return &player, nil
 }
+
+func (p *PlayerRepository) GetPlayerWithGame(ctx context.Context, playerId int) (*repository.Player, error) {
+	var player repository.Player
+	if err := p.db.Preload("Game").First(&player, playerId).Error; err != nil {
+		return nil, err
+	}
+	return &player, nil
+}

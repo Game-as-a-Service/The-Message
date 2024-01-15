@@ -6,6 +6,7 @@ import (
 	"github.com/Game-as-a-Service/The-Message/service/request"
 	"github.com/stretchr/testify/assert"
 	"net/http"
+	"strconv"
 )
 
 func (suite *IntegrationTestSuite) TestPlayCardE2E() {
@@ -21,11 +22,13 @@ func (suite *IntegrationTestSuite) TestPlayCardE2E() {
 	_ = suite.playerServ.InitPlayers(context.TODO(), game, createGameRequest)
 	_ = suite.gameServ.InitDeck(context.TODO(), game)
 	_ = suite.gameServ.DrawCardsForAllPlayers(context.TODO(), game)
+	game, _ = suite.gameServ.GetGameById(context.TODO(), game.Id)
+	suite.gameServ.UpdateCurrentPlayer(context.TODO(), game, game.Players[0].Id)
 	cards, _ := suite.playerRepo.GetPlayerWithPlayerCards(context.TODO(), 2)
 	playCardId := cards.PlayerCards[0].CardId
 
 	// when
-	api := "/api/v1/players/2/player-cards"
+	api := "/api/v1/players/" + strconv.Itoa(game.Players[0].Id) + "/player-cards"
 	playCardRequest := PlayCardRequest{CardId: playCardId}
 	jsonBody, err := json.Marshal(playCardRequest)
 	if err != nil {
