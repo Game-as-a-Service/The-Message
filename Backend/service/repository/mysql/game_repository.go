@@ -58,3 +58,13 @@ func (g *GameRepository) GetGameWithPlayers(ctx context.Context, id int) (*repos
 	}
 	return &game, nil
 }
+
+func (g *GameRepository) UpdateGame(ctx context.Context, game *repository.Game) error {
+	result := g.db.Save(&game)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}

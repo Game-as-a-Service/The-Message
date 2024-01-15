@@ -62,6 +62,9 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		return
 	}
 
+	game, _ = g.gameService.GetGameById(c, game.Id)
+	g.gameService.UpdateCurrentPlayer(c, game, game.Players[0].Id)
+
 	if err := g.gameService.InitDeck(c, game); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
@@ -144,9 +147,14 @@ func (g *GameHandler) GameEvent(c *gin.Context) {
 		return
 	}
 
+	game, err := g.gameService.GetGameById(c, gameId)
+	if err != nil {
+		return
+	}
+
 	g.SSE.Message <- gin.H{
-		"message": "這邊要去取得最新的狀態",
-		"status":  "?",
+		"message": game.Status,
+		"status":  game.Status,
 		"game_id": gameId,
 	}
 

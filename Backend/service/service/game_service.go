@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
+	"github.com/gin-gonic/gin"
 )
 
 type GameService struct {
@@ -122,4 +123,9 @@ func (g *GameService) DeleteGame(c context.Context, id int) error {
 		return err
 	}
 	return nil
+}
+
+func (g *GameService) UpdateCurrentPlayer(c *gin.Context, game *repository.Game, playerId int) {
+	game.CurrentPlayerId = playerId
+	g.GameRepo.UpdateGame(c, game)
 }
