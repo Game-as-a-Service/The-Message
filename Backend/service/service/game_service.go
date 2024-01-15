@@ -154,8 +154,17 @@ func (g *GameService) NextPlayer(c *gin.Context, playerId int) {
 
 	if currentPlayerIndex+1 >= len(game.Players) {
 		g.UpdateCurrentPlayer(c, game, game.Players[0].Id)
+		g.UpdateStatus(c, game, enums.TransmitIntelligenceStage)
 		return
 	}
 
 	g.UpdateCurrentPlayer(c, game, game.Players[currentPlayerIndex+1].Id)
+}
+
+func (g *GameService) UpdateStatus(c *gin.Context, game *repository.Game, stage string) {
+	game.Status = stage
+	err := g.GameRepo.UpdateGame(c, game)
+	if err != nil {
+		panic(err)
+	}
 }

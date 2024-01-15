@@ -74,33 +74,11 @@ func (p *PlayerHandler) PlayCard(c *gin.Context) {
 			return
 		}
 
-		var currentPlayerIndex int
-		for index, gPlayer := range game.Players {
-			if gPlayer.Id == playerId {
-				currentPlayerIndex = index
-				break
-			}
-		}
-
-		maxLen := len(game.Players)
-		if currentPlayerIndex+1 >= maxLen {
-			p.SSE.Message <- gin.H{
-				"message":     "傳遞",
-				"status":      "傳遞",
-				"game_id":     game.Id,
-				"next_player": game.Players[0].Id,
-			}
-		} else {
-			nextId := game.Players[currentPlayerIndex+1].Id
-
-			message := fmt.Sprintf("玩家: %d 已出牌", nextId)
-
-			p.SSE.Message <- gin.H{
-				"message":     message,
-				"status":      "功能",
-				"game_id":     game.Id,
-				"next_player": nextId,
-			}
+		p.SSE.Message <- gin.H{
+			"message":     fmt.Sprintf("玩家: %d 已出牌", playerId),
+			"status":      game.Status,
+			"game_id":     game.Id,
+			"next_player": game.CurrentPlayerId,
 		}
 	}
 

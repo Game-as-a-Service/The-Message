@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"github.com/Game-as-a-Service/The-Message/enums"
 	"io"
 	"log"
 	"net/http"
@@ -64,6 +65,7 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 
 	game, _ = g.gameService.GetGameById(c, game.Id)
 	g.gameService.UpdateCurrentPlayer(c, game, game.Players[0].Id)
+	g.gameService.UpdateStatus(c, game, enums.ActionCardStage)
 
 	if err := g.gameService.InitDeck(c, game); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -153,9 +155,10 @@ func (g *GameHandler) GameEvent(c *gin.Context) {
 	}
 
 	g.SSE.Message <- gin.H{
-		"message": game.Status,
-		"status":  game.Status,
-		"game_id": gameId,
+		"message":        game.Status,
+		"status":         game.Status,
+		"game_id":        gameId,
+		"current_player": game.CurrentPlayerId,
 	}
 
 	c.Stream(func(w io.Writer) bool {
