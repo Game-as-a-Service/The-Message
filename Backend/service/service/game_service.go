@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
+	"github.com/gin-gonic/gin"
 )
 
 type GameService struct {
@@ -128,6 +129,33 @@ func (g *GameService) UpdateCurrentPlayer(c context.Context, game *repository.Ga
 	game.CurrentPlayerId = playerId
 	err := g.GameRepo.UpdateGame(c, game)
 	if err != nil {
+		panic(err)
+	}
+}
+
+func (g *GameService) NextPlayer(c *gin.Context, playerId int) {
+	play, err := g.PlayerService.PlayerRepo.GetPlayer(c, playerId)
+	if err != nil {
 		return
 	}
+
+	game, err := g.GameRepo.GetGameWithPlayers(c, play.GameId)
+	if err != nil {
+		return
+	}
+
+	var currentPlayerIndex int
+	for index, gPlayer := range game.Players {
+		if gPlayer.Id == playerId {
+			currentPlayerIndex = index
+			break
+		}
+	}
+
+	if currentPlayerIndex+1 >= len(game.Players) {
+		g.UpdateCurrentPlayer(c, game, game.Players[0].Id)
+		return
+	}
+
+	g.UpdateCurrentPlayer(c, game, game.Players[currentPlayerIndex+1].Id)
 }

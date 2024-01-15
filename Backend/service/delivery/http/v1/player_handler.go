@@ -66,6 +66,8 @@ func (p *PlayerHandler) PlayCard(c *gin.Context) {
 
 	// TODO to Service
 	if result {
+		p.gameService.NextPlayer(c, playerId)
+
 		player, err := p.playerService.PlayerRepo.GetPlayer(c, playerId)
 		game, err := p.gameService.GameRepo.GetGameWithPlayers(c, player.GameId)
 		if err != nil {
