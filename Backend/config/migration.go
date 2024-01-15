@@ -10,6 +10,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"net/url"
 	"os"
+	"strings"
 )
 
 func NewMigration(dsn string, sourceURL string) (*migrate.Migrate, error) {
@@ -41,8 +42,7 @@ func NewMigration(dsn string, sourceURL string) (*migrate.Migrate, error) {
 }
 
 func RunRefresh() {
-	dir, _ := os.Getwd()
-	sourceURL := "file://" + dir + "/database/migrations"
+	sourceURL := GetSourceURL()
 
 	dsn := BaseDSN()
 	val := url.Values{}
@@ -66,4 +66,14 @@ func RunRefresh() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func GetSourceURL() string {
+	dir, _ := os.Getwd()
+	dir = strings.SplitAfter(dir, "Backend")[0]
+	dir = strings.ReplaceAll(dir, "\\", "/")
+
+	sourceURL := "file://" + dir + "/database/migrations"
+
+	return sourceURL
 }
