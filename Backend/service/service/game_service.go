@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 )
 
@@ -37,7 +38,8 @@ func (g *GameService) InitGame(c context.Context) (*repository.Game, error) {
 	}
 
 	game, err := g.CreateGame(c, &repository.Game{
-		Token: token,
+		Token:  token,
+		Status: enums.GameStart,
 	})
 	if err != nil {
 		return nil, err

@@ -13,6 +13,8 @@ type Player struct {
 	Name         string
 	GameId       int `gorm:"foreignKey:GameId;references:Id"`
 	IdentityCard string
+	Status       string
+	OrderNumber  int
 	PlayerCards  []PlayerCard
 	CreatedAt    time.Time `gorm:"autoCreateTime"`
 	UpdatedAt    time.Time `gorm:"autoCreateTime"`
