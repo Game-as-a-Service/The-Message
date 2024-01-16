@@ -133,32 +133,26 @@ func (g *GameService) UpdateCurrentPlayer(c context.Context, game *repository.Ga
 	}
 }
 
-func (g *GameService) NextPlayer(c *gin.Context, playerId int) {
-	play, err := g.PlayerService.PlayerRepo.GetPlayer(c, playerId)
-	if err != nil {
-		return
-	}
+func (g *GameService) NextPlayer(c *gin.Context, player *repository.Player) (*repository.Game, error) {
+	players := player.Game.Players
 
-	game, err := g.GameRepo.GetGameWithPlayers(c, play.GameId)
-	if err != nil {
-		return
-	}
+	currentPlayerId := player.Id
 
 	var currentPlayerIndex int
-	for index, gPlayer := range game.Players {
-		if gPlayer.Id == playerId {
+	for index, gPlayer := range players {
+		if gPlayer.Id == currentPlayerId {
 			currentPlayerIndex = index
 			break
 		}
 	}
 
-	if currentPlayerIndex+1 >= len(game.Players) {
-		g.UpdateCurrentPlayer(c, game, game.Players[0].Id)
-		g.UpdateStatus(c, game, enums.TransmitIntelligenceStage)
-		return
+	if currentPlayerIndex+1 >= len(players) {
+		player.Game.CurrentPlayerId = players[0].Id
+		player.Game.Status = enums.TransmitIntelligenceStage
+	} else {
+		player.Game.CurrentPlayerId = players[currentPlayerIndex+1].Id
 	}
-
-	g.UpdateCurrentPlayer(c, game, game.Players[currentPlayerIndex+1].Id)
+	return player.Game, nil
 }
 
 func (g *GameService) UpdateStatus(c *gin.Context, game *repository.Game, stage string) {

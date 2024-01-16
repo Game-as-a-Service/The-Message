@@ -28,4 +28,5 @@ type PlayerRepository interface {
 	GetPlayersByGameId(ctx context.Context, id int) ([]*Player, error)
 	GetPlayerWithPlayerCards(ctx context.Context, playerId int) (*Player, error)
 	GetPlayerWithGame(ctx context.Context, playerId int) (*Player, error)
+	GetPlayerWithGamePlayersAndPlayerCardsCard(ctx context.Context, playerId int) (*Player, error)
 }

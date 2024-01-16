@@ -46,43 +46,27 @@ func RegisterPlayerHandler(opts *PlayerHandlerOptions) {
 func (p *PlayerHandler) PlayCard(c *gin.Context) {
 	playerId, _ := strconv.Atoi(c.Param("playerId"))
 	var req request.PlayCardRequest
-
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	canPlay, err := p.playerService.CanPlayCard(c, playerId, req.CardID)
-	if !canPlay {
+	game, card, err := p.playerService.PlayCard(c, playerId, req.CardID)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
-	result, err := p.playerService.PlayCard(c, playerId, req.CardID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
-
 	// TODO to Service
-	if result {
-		p.gameService.NextPlayer(c, playerId)
-
-		player, err := p.playerService.PlayerRepo.GetPlayer(c, playerId)
-		game, err := p.gameService.GameRepo.GetGameWithPlayers(c, player.GameId)
-		if err != nil {
-			return
-		}
-
-		p.SSE.Message <- gin.H{
-			"message":     fmt.Sprintf("玩家: %d 已出牌", playerId),
-			"status":      game.Status,
-			"game_id":     game.Id,
-			"next_player": game.CurrentPlayerId,
-		}
+	p.SSE.Message <- gin.H{
+		"game_id":     game.Id,
+		"status":      game.Status,
+		"message":     fmt.Sprintf("玩家: %d 已出牌", playerId),
+		"card":        card.Name,
+		"next_player": game.CurrentPlayerId,
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"result": result,
+		"result": true,
 	})
 }
