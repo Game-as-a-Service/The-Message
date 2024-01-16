@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"github.com/Game-as-a-Service/The-Message/service/request"
 	"net/http"
 	"strconv"
@@ -11,16 +12,22 @@ import (
 
 type PlayerHandler struct {
 	playerService service.PlayerService
+	gameService   service.GameService
+	SSE           *Event
 }
 
 type PlayerHandlerOptions struct {
-	Engine  *gin.Engine
-	Service service.PlayerService
+	Engine      *gin.Engine
+	Service     service.PlayerService
+	GameService service.GameService
+	SSE         *Event
 }
 
 func RegisterPlayerHandler(opts *PlayerHandlerOptions) {
 	handler := &PlayerHandler{
 		playerService: opts.Service,
+		gameService:   opts.GameService,
+		SSE:           opts.SSE,
 	}
 
 	opts.Engine.POST("/api/v1/players/:playerId/player-cards", handler.PlayCard)
@@ -39,19 +46,27 @@ func RegisterPlayerHandler(opts *PlayerHandlerOptions) {
 func (p *PlayerHandler) PlayCard(c *gin.Context) {
 	playerId, _ := strconv.Atoi(c.Param("playerId"))
 	var req request.PlayCardRequest
-
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	result, err := p.playerService.PlayCard(c, playerId, req.CardID)
+	game, card, err := p.playerService.PlayCard(c, playerId, req.CardID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
+	// TODO to Service
+	p.SSE.Message <- gin.H{
+		"game_id":     game.Id,
+		"status":      game.Status,
+		"message":     fmt.Sprintf("玩家: %d 已出牌", playerId),
+		"card":        card.Name,
+		"next_player": game.CurrentPlayerId,
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"result": result,
+		"result": true,
 	})
 }

@@ -4,7 +4,9 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
+	"github.com/gin-gonic/gin"
 )
 
 type GameService struct {
@@ -37,13 +39,12 @@ func (g *GameService) InitGame(c context.Context) (*repository.Game, error) {
 	}
 
 	game, err := g.CreateGame(c, &repository.Game{
-		Token: token,
+		Token:  token,
+		Status: enums.GameStart,
 	})
 	if err != nil {
 		return nil, err
 	}
-
-	// sent sse
 
 	return game, nil
 }
@@ -109,7 +110,7 @@ func (g *GameService) CreateGame(c context.Context, game *repository.Game) (*rep
 }
 
 func (g *GameService) GetGameById(c context.Context, id int) (*repository.Game, error) {
-	game, err := g.GameRepo.GetGameById(c, id)
+	game, err := g.GameRepo.GetGameWithPlayers(c, id)
 	if err != nil {
 		return nil, err
 	}
@@ -122,5 +123,42 @@ func (g *GameService) DeleteGame(c context.Context, id int) error {
 		return err
 	}
 	return nil
+}
 
+func (g *GameService) UpdateCurrentPlayer(c context.Context, game *repository.Game, playerId int) {
+	game.CurrentPlayerId = playerId
+	err := g.GameRepo.UpdateGame(c, game)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (g *GameService) NextPlayer(c *gin.Context, player *repository.Player) (*repository.Game, error) {
+	players := player.Game.Players
+
+	currentPlayerId := player.Id
+
+	var currentPlayerIndex int
+	for index, gPlayer := range players {
+		if gPlayer.Id == currentPlayerId {
+			currentPlayerIndex = index
+			break
+		}
+	}
+
+	if currentPlayerIndex+1 >= len(players) {
+		player.Game.CurrentPlayerId = players[0].Id
+		player.Game.Status = enums.TransmitIntelligenceStage
+	} else {
+		player.Game.CurrentPlayerId = players[currentPlayerIndex+1].Id
+	}
+	return player.Game, nil
+}
+
+func (g *GameService) UpdateStatus(c *gin.Context, game *repository.Game, stage string) {
+	game.Status = stage
+	err := g.GameRepo.UpdateGame(c, game)
+	if err != nil {
+		panic(err)
+	}
 }

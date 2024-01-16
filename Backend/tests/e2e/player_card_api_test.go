@@ -67,15 +67,3 @@ func (suite *IntegrationTestSuite) TestGetPlayerCards() {
 		}
 	}
 }
-
-type PlayerCard struct {
-	ID       string `json:"id"`
-	PlayerID string `json:"player_id"`
-	GameID   string `json:"game_id"`
-	CardID   string `json:"card_id"`
-	Type     string `json:"type"`
-}
-
-type Request_p struct {
-	Player Player `json:"player"`
-}
