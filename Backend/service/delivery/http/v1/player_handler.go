@@ -1,9 +1,10 @@
 package http
 
 import (
-	"github.com/Game-as-a-Service/The-Message/service/request"
 	"net/http"
 	"strconv"
+
+	"github.com/Game-as-a-Service/The-Message/service/request"
 
 	"github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"
@@ -24,6 +25,7 @@ func RegisterPlayerHandler(opts *PlayerHandlerOptions) {
 	}
 
 	opts.Engine.POST("/api/v1/players/:playerId/player-cards", handler.PlayCard)
+	opts.Engine.POST("/api/v1/players/:playerId/accept", handler.AcceptCard)
 }
 
 // PlayCard godoc
@@ -53,5 +55,19 @@ func (p *PlayerHandler) PlayCard(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": result,
+	})
+}
+
+func (p *PlayerHandler) AcceptCard(c *gin.Context) {
+	playerId, _ := strconv.Atoi(c.Param("playerId"))
+
+	result, err := p.playerService.AcceptCard(c, playerId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success",
 	})
 }
