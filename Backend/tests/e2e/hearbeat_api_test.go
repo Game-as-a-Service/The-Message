@@ -12,7 +12,7 @@ import (
 func TestHeartbeatEndpoint(t *testing.T) {
 	// Initiate a new gin router
 	gin.SetMode(gin.TestMode)
-	router := gin.New()
+	router := gin.Default()
 
 	// Set up the heartbeat endpoint
 	router.GET("/api/v1/heartbeat", func(c *gin.Context) {
@@ -20,21 +20,13 @@ func TestHeartbeatEndpoint(t *testing.T) {
 	})
 
 	// Prepare a new HTTP request
-	req, err := http.NewRequest("GET", "/api/v1/heartbeat", nil)
-	if err != nil {
-		t.Fatalf("Couldn't create request: %v", err)
-	}
+	req, _ := http.NewRequest("GET", "/api/v1/heartbeat", nil)
 
 	// Create a response recorder
-	response := httptest.NewRecorder()
-	router.ServeHTTP(response, req)
-
-	// Check if the status code is 204
-	if response.Code != http.StatusNoContent {
-		t.Errorf("Expected status code %d but got %d", http.StatusNoContent, response.Code)
-	}
+	res := httptest.NewRecorder()
+	router.ServeHTTP(res, req)
 
 	// Assert that the response body is empty
-	assert.Equal(t, http.StatusNoContent, response.Code)
-	assert.Empty(t, response.Body.String())
+	assert.Equal(t, http.StatusNoContent, res.Code)
+	assert.Empty(t, res.Body.String())
 }
