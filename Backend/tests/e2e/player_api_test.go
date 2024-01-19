@@ -3,10 +3,17 @@ package e2e
 import (
 	"context"
 	"encoding/json"
+	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/request"
+	"github.com/bxcodec/faker/v3"
 	"github.com/stretchr/testify/assert"
+	"io"
+	"math"
+	"math/rand"
 	"net/http"
 	"strconv"
+	"strings"
+	"testing"
 )
 
 func (suite *IntegrationTestSuite) TestPlayCardE2E() {
@@ -42,6 +49,163 @@ func (suite *IntegrationTestSuite) TestPlayCardE2E() {
 	assert.Equal(suite.T(), 2, len(play.PlayerCards))
 }
 
+func (suite *IntegrationTestSuite) TestTransmitIntelligenceE2E() {
+	api := "/api/v1/player/{player_id}/transmit-intelligence"
+	game, _ := suite.gameServ.InitGame(context.TODO())
+
+	// Fake player count random 1~3
+	playerCount := rand.Intn(3) + 1
+
+	// Fake players data
+	var players []request.PlayerInfo
+	for i := 0; i < playerCount; i++ {
+		player := request.PlayerInfo{
+			ID:   faker.UUIDDigit(),
+			Name: faker.FirstName(),
+		}
+		players = append(players, player)
+	}
+
+	// Fake game data
+	createGameRequest := request.CreateGameRequest{
+		Players: players,
+	}
+
+	_ = suite.playerServ.InitPlayers(context.TODO(), game, createGameRequest)
+	_ = suite.gameServ.InitDeck(context.TODO(), game)
+	_ = suite.gameServ.DrawCardsForAllPlayers(context.TODO(), game)
+
+	suite.T().Run("it can validate intelligence type", func(t *testing.T) {
+		playerId := rand.Intn(playerCount) + 1
+		cardId := rand.Intn(playerCount)
+
+		// Request only card id
+		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
+		req := PlayCardRequest{CardId: cardId}
+		reqBody, _ := json.Marshal(req)
+
+		res := suite.requestJson(url, reqBody, http.MethodPost)
+
+		// Convert response body from json to map
+		resBodyAsByteArray, _ := io.ReadAll(res.Body)
+		resBody := make(map[string]interface{})
+		_ = json.Unmarshal(resBodyAsByteArray, &resBody)
+
+		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+		assert.Equal(t, "Invalid intelligence type", resBody["message"])
+	})
+
+	suite.T().Run("it can validate card id", func(t *testing.T) {
+		playerId := rand.Intn(playerCount) + 1
+		intelligenceType := rand.Intn(3) + 1
+
+		// Request only intelligence type
+		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
+		req := PlayCardRequest{IntelligenceType: intelligenceType}
+		reqBody, _ := json.Marshal(req)
+
+		res := suite.requestJson(url, reqBody, http.MethodPost)
+
+		// Convert response body from json to map
+		resBodyAsByteArray, _ := io.ReadAll(res.Body)
+		resBody := make(map[string]interface{})
+		_ = json.Unmarshal(resBodyAsByteArray, &resBody)
+
+		assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
+		assert.Equal(t, "Card not found", resBody["message"])
+	})
+
+	suite.T().Run("it can fail when player not found", func(t *testing.T) {
+		playerId := math.MaxInt32
+		cardId := rand.Intn(playerCount)
+		intelligenceType := rand.Intn(3) + 1
+
+		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
+		req := PlayCardRequest{CardId: cardId, IntelligenceType: intelligenceType}
+		reqBody, _ := json.Marshal(req)
+
+		res := suite.requestJson(url, reqBody, http.MethodPost)
+
+		// Convert response body from json to map
+		resBodyAsByteArray, _ := io.ReadAll(res.Body)
+		resBody := make(map[string]interface{})
+		_ = json.Unmarshal(resBodyAsByteArray, &resBody)
+
+		assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
+		assert.Equal(t, "Player not found", resBody["message"])
+	})
+
+	suite.T().Run("it can fail when intelligence type is not valid", func(t *testing.T) {
+		playerId := rand.Intn(playerCount) + 1
+		cardId := rand.Intn(playerCount)
+		intelligenceType := math.MaxInt32
+
+		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
+		req := PlayCardRequest{CardId: cardId, IntelligenceType: intelligenceType}
+		reqBody, _ := json.Marshal(req)
+
+		res := suite.requestJson(url, reqBody, http.MethodPost)
+
+		// Convert response body from json to map
+		resBodyAsByteArray, _ := io.ReadAll(res.Body)
+		resBody := make(map[string]interface{})
+		_ = json.Unmarshal(resBodyAsByteArray, &resBody)
+
+		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+		assert.Equal(t, "Invalid intelligence type", resBody["message"])
+
+	})
+
+	suite.T().Run("it can fail when player card not found", func(t *testing.T) {
+		playerId := rand.Intn(playerCount) + 1
+		cardId := math.MaxInt32
+		intelligenceType := rand.Intn(3) + 1
+
+		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
+		req := PlayCardRequest{CardId: cardId, IntelligenceType: intelligenceType}
+		reqBody, _ := json.Marshal(req)
+
+		res := suite.requestJson(url, reqBody, http.MethodPost)
+
+		// Convert response body from json to map
+		resBodyAsByteArray, _ := io.ReadAll(res.Body)
+		resBody := make(map[string]interface{})
+		_ = json.Unmarshal(resBodyAsByteArray, &resBody)
+
+		assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
+		assert.Equal(t, "Card not found", resBody["message"])
+	})
+
+	suite.T().Run("it can success when valid card id and intelligence type", func(t *testing.T) {
+		playerId := rand.Intn(playerCount) + 1
+		intelligenceType := rand.Intn(3) + 1
+
+		// Get player's card
+		cards, _ := suite.playerRepo.GetPlayerWithPlayerCards(context.TODO(), playerId)
+
+		// Random card id
+		num := rand.Intn(len(cards.PlayerCards))
+		cardId := cards.PlayerCards[num].CardId
+
+		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
+		req := PlayCardRequest{CardId: cardId, IntelligenceType: intelligenceType}
+		reqBody, _ := json.Marshal(req)
+
+		res := suite.requestJson(url, reqBody, http.MethodPost)
+
+		// Convert response body from json to map
+		resBodyAsByteArray, _ := io.ReadAll(res.Body)
+		resBody := make(map[string]interface{})
+		_ = json.Unmarshal(resBodyAsByteArray, &resBody)
+
+		msg := enums.ToString(intelligenceType) + " intelligence transmitted"
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		assert.Equal(t, msg, resBody["message"])
+		assert.Equal(t, true, resBody["result"])
+	})
+}
+
 type PlayCardRequest struct {
-	CardId int `json:"card_id"`
+	CardId           int `json:"card_id"`
+	IntelligenceType int `json:"intelligence_type"`
 }
