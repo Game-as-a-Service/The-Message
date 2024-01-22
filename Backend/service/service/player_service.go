@@ -11,25 +11,28 @@ import (
 )
 
 type PlayerService struct {
-	PlayerRepo     repository.PlayerRepository
-	PlayerCardRepo repository.PlayerCardRepository
-	GameRepo       repository.GameRepository
-	GameServ       *GameService
+	PlayerRepo       repository.PlayerRepository
+	PlayerCardRepo   repository.PlayerCardRepository
+	GameRepo         repository.GameRepository
+	GameServ         *GameService
+	GameProgressRepo repository.GameProgressesRepository
 }
 
 type PlayerServiceOptions struct {
-	PlayerRepo     repository.PlayerRepository
-	PlayerCardRepo repository.PlayerCardRepository
-	GameRepo       repository.GameRepository
-	GameServ       *GameService
+	PlayerRepo       repository.PlayerRepository
+	PlayerCardRepo   repository.PlayerCardRepository
+	GameRepo         repository.GameRepository
+	GameServ         *GameService
+	GameProgressRepo repository.GameProgressesRepository
 }
 
 func NewPlayerService(opts *PlayerServiceOptions) PlayerService {
 	return PlayerService{
-		PlayerRepo:     opts.PlayerRepo,
-		PlayerCardRepo: opts.PlayerCardRepo,
-		GameRepo:       opts.GameRepo,
-		GameServ:       opts.GameServ,
+		PlayerRepo:       opts.PlayerRepo,
+		PlayerCardRepo:   opts.PlayerCardRepo,
+		GameRepo:         opts.GameRepo,
+		GameServ:         opts.GameServ,
+		GameProgressRepo: opts.GameProgressRepo,
 	}
 }
 
@@ -188,7 +191,6 @@ func (p *PlayerService) TransmitIntelligenceCard(c *gin.Context, playerId int, g
 	}
 
 	ret, err := p.PlayerCardRepo.DeletePlayerCardByPlayerIdAndCardId(c, playerId, gameId, cardId)
-
 	if err != nil {
 		return false, err
 	}
@@ -197,6 +199,14 @@ func (p *PlayerService) TransmitIntelligenceCard(c *gin.Context, playerId int, g
 	if err != nil {
 		return false, err
 	}
+
+	_, err = p.GameProgressRepo.CreateGameProgress(c, &repository.GameProgresses{
+		GameId:         game.Id,
+		PlayerId:       playerId,
+		CardId:         cardId,
+		Action:         enums.TransmitIntelligence,
+		TargetPlayerId: game.CurrentPlayerId,
+	})
 
 	return ret, nil
 }
