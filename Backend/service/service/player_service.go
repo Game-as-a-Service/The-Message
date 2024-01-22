@@ -70,8 +70,50 @@ func (p *PlayerService) ShuffleIdentityCards(cards []string) []string {
 	return shuffledCards
 }
 
+func (p *PlayerService) CanPlayCard(c context.Context, player *repository.Player) (bool, error) {
+	if player.Game.Status == enums.GameEnd {
+		return false, errors.New("遊戲已結束")
+	}
+
+	if player.Status == enums.PlayerStatusDead {
+		return false, errors.New("你已死亡")
+	}
+
+	if player.Game.CurrentPlayerId != player.Id {
+		return false, errors.New("尚未輪到你出牌")
+	}
+
+	return true, nil
+}
+
+func (p *PlayerService) CheckPlayerCardExist(c context.Context, playerId int, gameId int, cardId int) (bool, error) {
+	exist, err := p.PlayerCardRepo.ExistPlayerCardByPlayerIdAndCardId(c, playerId, gameId, cardId)
+
+	if err != nil {
+		return false, err
+	}
+
+	return exist, nil
+}
+
 func (p *PlayerService) CreatePlayer(c context.Context, player *repository.Player) (*repository.Player, error) {
 	player, err := p.PlayerRepo.CreatePlayer(c, player)
+	if err != nil {
+		return nil, err
+	}
+	return player, nil
+}
+
+func (p *PlayerService) CreatePlayerCard(c context.Context, card *repository.PlayerCard) error {
+	_, err := p.PlayerCardRepo.CreatePlayerCard(c, card)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *PlayerService) GetPlayerById(c context.Context, id int) (*repository.Player, error) {
+	player, err := p.PlayerRepo.GetPlayer(c, id)
 	if err != nil {
 		return nil, err
 	}
@@ -86,12 +128,13 @@ func (p *PlayerService) GetPlayersByGameId(c context.Context, id int) ([]*reposi
 	return players, nil
 }
 
-func (p *PlayerService) CreatePlayerCard(c context.Context, card *repository.PlayerCard) error {
-	_, err := p.PlayerCardRepo.CreatePlayerCard(c, card)
-	if err != nil {
-		return err
+func (p *PlayerService) GetHandCardId(player *repository.Player, cardId int) (*repository.PlayerCard, error) {
+	for _, card := range player.PlayerCards {
+		if card.CardId == cardId && card.Type == "hand" {
+			return &card, nil
+		}
 	}
-	return nil
+	return nil, errors.New("找不到手牌")
 }
 
 func (p *PlayerService) PlayCard(c *gin.Context, playerId int, cardId int) (*repository.Game, *repository.Card, error) {
@@ -100,7 +143,7 @@ func (p *PlayerService) PlayCard(c *gin.Context, playerId int, cardId int) (*rep
 		return nil, nil, err
 	}
 
-	result, err := p.CanPlayCard(c, player, cardId)
+	result, err := p.CanPlayCard(c, player)
 	if !result || err != nil {
 		return nil, nil, err
 	}
@@ -128,27 +171,32 @@ func (p *PlayerService) PlayCard(c *gin.Context, playerId int, cardId int) (*rep
 	return game, &handCard.Card, nil
 }
 
-func (p *PlayerService) CanPlayCard(c *gin.Context, player *repository.Player, cardId int) (bool, error) {
-	if player.Game.Status == enums.GameEnd {
-		return false, errors.New("遊戲已結束")
+func (p *PlayerService) TransmitIntelligenceCard(c *gin.Context, playerId int, gameId int, cardId int) (bool, error) {
+	player, err := p.PlayerRepo.GetPlayerWithGamePlayersAndPlayerCardsCard(c, playerId)
+	if err != nil {
+		return false, err
 	}
 
-	if player.Status == enums.PlayerStatusDead {
-		return false, errors.New("你已死亡")
+	result, err := p.CanPlayCard(c, player)
+	if !result || err != nil {
+		return false, err
 	}
 
-	if player.Game.CurrentPlayerId != player.Id {
-		return false, errors.New("尚未輪到你出牌")
+	game, err := p.GameServ.NextPlayer(c, player)
+	if err != nil {
+		return false, err
 	}
 
-	return true, nil
-}
+	ret, err := p.PlayerCardRepo.DeletePlayerCardByPlayerIdAndCardId(c, playerId, gameId, cardId)
 
-func (p *PlayerService) GetHandCardId(player *repository.Player, cardId int) (*repository.PlayerCard, error) {
-	for _, card := range player.PlayerCards {
-		if card.CardId == cardId && card.Type == "hand" {
-			return &card, nil
-		}
+	if err != nil {
+		return false, err
 	}
-	return nil, errors.New("找不到手牌")
+
+	err = p.GameRepo.UpdateGame(c, game)
+	if err != nil {
+		return false, err
+	}
+
+	return ret, nil
 }

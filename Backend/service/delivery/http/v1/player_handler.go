@@ -2,12 +2,12 @@ package http
 
 import (
 	"fmt"
+	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/request"
-	"net/http"
-	"strconv"
-
 	"github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"strconv"
 )
 
 type PlayerHandler struct {
@@ -31,6 +31,7 @@ func RegisterPlayerHandler(opts *PlayerHandlerOptions) {
 	}
 
 	opts.Engine.POST("/api/v1/players/:playerId/player-cards", handler.PlayCard)
+	opts.Engine.POST("/api/v1/player/:playerId/transmit-intelligence", handler.TransmitIntelligence)
 }
 
 // PlayCard godoc
@@ -68,5 +69,58 @@ func (p *PlayerHandler) PlayCard(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": true,
+	})
+}
+
+// TransmitIntelligence godoc
+// @Summary Transmit intelligence
+// @Description Transmit an intelligence card
+// @Tags players
+// @Accept json
+// @Produce json
+// @Param playerId path int true "Player ID"
+// @Param card_id body request.PlayCardRequest true "Card ID"
+// @Param intelligence_type body request.PlayCardRequest true "Intelligence Type"
+// @Success 200 {object} request.PlayCardResponse
+// @Router /api/v1/player/{playerId}/transmit-intelligence [post]
+func (p *PlayerHandler) TransmitIntelligence(c *gin.Context) {
+	playerId, _ := strconv.Atoi(c.Param("playerId"))
+	var req request.PlayCardRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+
+	intelligenceType := enums.ToString(req.IntelligenceType)
+
+	if intelligenceType == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid intelligence type"})
+		return
+	}
+
+	player, err := p.playerService.GetPlayerById(c, playerId)
+
+	if err != nil || player == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Player not found"})
+		return
+	}
+
+	// Check card_id exists in player_cards
+	exist, err := p.playerService.CheckPlayerCardExist(c, playerId, player.GameId, req.CardID)
+	if err != nil || !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Card not found"})
+		return
+	}
+
+	ret, err := p.playerService.TransmitIntelligenceCard(c, playerId, player.GameId, req.CardID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"result":  ret,
+		"message": enums.ToString(req.IntelligenceType) + " intelligence transmitted",
 	})
 }

@@ -160,6 +160,11 @@ func (suite *IntegrationTestSuite) TearDownSuite() {
 
 func (suite *IntegrationTestSuite) SetupTest() {
 	suite.tx = suite.db.Begin()
+
+	//Fixme Run db refresh and seeders
+	config.RunRefresh()
+	db := config.NewDatabase()
+	seeders.Run(db)
 }
 
 func (suite *IntegrationTestSuite) TearDownTest() {
