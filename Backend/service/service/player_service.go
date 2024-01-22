@@ -70,7 +70,7 @@ func (p *PlayerService) ShuffleIdentityCards(cards []string) []string {
 	return shuffledCards
 }
 
-func (p *PlayerService) CanPlayCard(c *gin.Context, player *repository.Player, cardId int) (bool, error) {
+func (p *PlayerService) CanPlayCard(c context.Context, player *repository.Player) (bool, error) {
 	if player.Game.Status == enums.GameEnd {
 		return false, errors.New("遊戲已結束")
 	}
@@ -143,7 +143,7 @@ func (p *PlayerService) PlayCard(c *gin.Context, playerId int, cardId int) (*rep
 		return nil, nil, err
 	}
 
-	result, err := p.CanPlayCard(c, player, cardId)
+	result, err := p.CanPlayCard(c, player)
 	if !result || err != nil {
 		return nil, nil, err
 	}
@@ -172,8 +172,28 @@ func (p *PlayerService) PlayCard(c *gin.Context, playerId int, cardId int) (*rep
 }
 
 func (p *PlayerService) TransmitIntelligenceCard(c *gin.Context, playerId int, gameId int, cardId int) (bool, error) {
+	player, err := p.PlayerRepo.GetPlayerWithGamePlayersAndPlayerCardsCard(c, playerId)
+	if err != nil {
+		return false, err
+	}
+
+	result, err := p.CanPlayCard(c, player)
+	if !result || err != nil {
+		return false, err
+	}
+
+	game, err := p.GameServ.NextPlayer(c, player)
+	if err != nil {
+		return false, err
+	}
+
 	ret, err := p.PlayerCardRepo.DeletePlayerCardByPlayerIdAndCardId(c, playerId, gameId, cardId)
 
+	if err != nil {
+		return false, err
+	}
+
+	err = p.GameRepo.UpdateGame(c, game)
 	if err != nil {
 		return false, err
 	}
