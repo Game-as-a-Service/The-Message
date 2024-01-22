@@ -17,36 +17,60 @@ import (
 )
 
 func (suite *IntegrationTestSuite) TestPlayCardE2E() {
-	// given
+	// Given
+	api := "/api/v1/players/{player_id}/player-cards"
 	game, _ := suite.gameServ.InitGame(context.TODO())
-	createGameRequest := request.CreateGameRequest{
-		Players: []request.PlayerInfo{
-			{ID: "6497f6f226b40d440b9a90cc", Name: "A"},
-			{ID: "6498112b26b40d440b9a90ce", Name: "B"},
-			{ID: "6499df157fed0c21a4fd0425", Name: "C"},
-		},
+
+	// Fake player count random 1~3
+	playerCount := rand.Intn(3) + 1
+
+	// Fake players data
+	var players []request.PlayerInfo
+	for i := 0; i < playerCount; i++ {
+		player := request.PlayerInfo{
+			ID:   faker.UUIDDigit(),
+			Name: faker.FirstName(),
+		}
+		players = append(players, player)
 	}
+
+	// Fake game data
+	createGameRequest := request.CreateGameRequest{
+		Players: players,
+	}
+
 	_ = suite.playerServ.InitPlayers(context.TODO(), game, createGameRequest)
 	_ = suite.gameServ.InitDeck(context.TODO(), game)
 	_ = suite.gameServ.DrawCardsForAllPlayers(context.TODO(), game)
-	game, _ = suite.gameServ.GetGameById(context.TODO(), game.Id)
-	suite.gameServ.UpdateCurrentPlayer(context.TODO(), game, game.Players[0].Id)
-	cards, _ := suite.playerRepo.GetPlayerWithPlayerCards(context.TODO(), 2)
-	playCardId := cards.PlayerCards[0].CardId
 
-	// when
-	api := "/api/v1/players/" + strconv.Itoa(game.Players[0].Id) + "/player-cards"
-	playCardRequest := PlayCardRequest{CardId: playCardId}
-	jsonBody, err := json.Marshal(playCardRequest)
-	if err != nil {
-		suite.T().Fatalf("Failed to marshal JSON: %v", err)
-	}
-	resp := suite.requestJson(api, jsonBody, http.MethodPost)
+	playerId := rand.Intn(playerCount) + 1
 
-	// then
-	assert.Equal(suite.T(), 200, resp.StatusCode)
-	play, _ := suite.playerRepo.GetPlayerWithPlayerCards(context.TODO(), 2)
-	assert.Equal(suite.T(), 2, len(play.PlayerCards))
+	// Get player's card
+	cards, _ := suite.playerRepo.GetPlayerWithPlayerCards(context.TODO(), playerId)
+
+	// Random card id
+	num := rand.Intn(len(cards.PlayerCards))
+	cardId := cards.PlayerCards[num].CardId
+
+	// Set player to current player
+	suite.gameServ.UpdateCurrentPlayer(context.TODO(), game, playerId)
+
+	url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
+	req := PlayCardRequest{CardId: cardId}
+	reqBody, _ := json.Marshal(req)
+
+	res := suite.requestJson(url, reqBody, http.MethodPost)
+
+	// Convert response body from json to map
+	resBodyAsByteArray, _ := io.ReadAll(res.Body)
+	resBody := make(map[string]interface{})
+	_ = json.Unmarshal(resBodyAsByteArray, &resBody)
+
+	// Then
+	assert.Equal(suite.T(), 200, res.StatusCode)
+
+	player, _ := suite.playerRepo.GetPlayerWithPlayerCards(context.TODO(), playerId)
+	assert.Equal(suite.T(), len(cards.PlayerCards)-1, len(player.PlayerCards))
 }
 
 func (suite *IntegrationTestSuite) TestTransmitIntelligenceE2E() {
