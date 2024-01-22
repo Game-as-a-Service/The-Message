@@ -176,6 +176,70 @@ func (suite *IntegrationTestSuite) TestTransmitIntelligenceE2E() {
 		assert.Equal(t, "Card not found", resBody["message"])
 	})
 
+	suite.T().Run("it can fail when game is end", func(t *testing.T) {
+		playerId := rand.Intn(playerCount) + 1
+		intelligenceType := rand.Intn(3) + 1
+
+		// Get player's card
+		cards, _ := suite.playerRepo.GetPlayerWithPlayerCards(context.TODO(), playerId)
+
+		// Random card id
+		num := rand.Intn(len(cards.PlayerCards))
+		cardId := cards.PlayerCards[num].CardId
+
+		// Set player to current player
+		suite.gameServ.UpdateCurrentPlayer(context.TODO(), game, playerId)
+
+		// Set game status to end
+		suite.gameServ.UpdateStatus(context.TODO(), game, enums.GameEnd)
+
+		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
+		req := PlayCardRequest{CardId: cardId, IntelligenceType: intelligenceType}
+		reqBody, _ := json.Marshal(req)
+
+		res := suite.requestJson(url, reqBody, http.MethodPost)
+
+		// Convert response body from json to map
+		resBodyAsByteArray, _ := io.ReadAll(res.Body)
+		resBody := make(map[string]interface{})
+		_ = json.Unmarshal(resBodyAsByteArray, &resBody)
+
+		assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
+		assert.Equal(t, "遊戲已結束", resBody["message"])
+
+		// Recover game status to start
+		suite.gameServ.UpdateStatus(context.TODO(), game, enums.GameStart)
+	})
+
+	suite.T().Run("it can fail when not player's turn", func(t *testing.T) {
+		playerId := rand.Intn(playerCount) + 1
+		intelligenceType := rand.Intn(3) + 1
+
+		// Get player's card
+		cards, _ := suite.playerRepo.GetPlayerWithPlayerCards(context.TODO(), playerId)
+
+		// Random card id
+		num := rand.Intn(len(cards.PlayerCards))
+		cardId := cards.PlayerCards[num].CardId
+
+		// Set other player to current player
+		suite.gameServ.UpdateCurrentPlayer(context.TODO(), game, playerId-1)
+
+		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
+		req := PlayCardRequest{CardId: cardId, IntelligenceType: intelligenceType}
+		reqBody, _ := json.Marshal(req)
+
+		res := suite.requestJson(url, reqBody, http.MethodPost)
+
+		// Convert response body from json to map
+		resBodyAsByteArray, _ := io.ReadAll(res.Body)
+		resBody := make(map[string]interface{})
+		_ = json.Unmarshal(resBodyAsByteArray, &resBody)
+
+		assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
+		assert.Equal(t, "尚未輪到你出牌", resBody["message"])
+	})
+
 	suite.T().Run("it can success when valid card id and intelligence type", func(t *testing.T) {
 		playerId := rand.Intn(playerCount) + 1
 		intelligenceType := rand.Intn(3) + 1
@@ -186,6 +250,9 @@ func (suite *IntegrationTestSuite) TestTransmitIntelligenceE2E() {
 		// Random card id
 		num := rand.Intn(len(cards.PlayerCards))
 		cardId := cards.PlayerCards[num].CardId
+
+		// Set player to current player
+		suite.gameServ.UpdateCurrentPlayer(context.TODO(), game, playerId)
 
 		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
 		req := PlayCardRequest{CardId: cardId, IntelligenceType: intelligenceType}
