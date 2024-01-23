@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"github.com/gin-gonic/gin"
@@ -155,7 +156,7 @@ func (g *GameService) NextPlayer(c *gin.Context, player *repository.Player) (*re
 	return player.Game, nil
 }
 
-func (g *GameService) UpdateStatus(c *gin.Context, game *repository.Game, stage string) {
+func (g *GameService) UpdateStatus(c context.Context, game *repository.Game, stage string) {
 	game.Status = stage
 	err := g.GameRepo.UpdateGame(c, game)
 	if err != nil {

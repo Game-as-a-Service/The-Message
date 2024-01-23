@@ -4,6 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"testing"
+
 	"github.com/Game-as-a-Service/The-Message/config"
 	"github.com/Game-as-a-Service/The-Message/database/seeders"
 	v1 "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
@@ -18,11 +24,6 @@ import (
 	_ "github.com/mattes/migrate/source/file"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"testing"
 )
 
 type IntegrationTestSuite struct {
@@ -84,6 +85,7 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	cardRepo := mysqlRepo.NewCardRepository(db)
 	deckRepo := mysqlRepo.NewDeckRepository(db)
 	playerCardRepo := mysqlRepo.NewPlayerCardRepository(db)
+	gameProgressRepo := mysqlRepo.NewGameProgressRepository(db)
 
 	cardService := service.NewCardService(&service.CardServiceOptions{
 		CardRepo:       cardRepo,
@@ -98,9 +100,10 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	})
 
 	playerService := service.NewPlayerService(&service.PlayerServiceOptions{
-		PlayerRepo:     playerRepo,
-		PlayerCardRepo: playerCardRepo,
-		GameRepo:       gameRepo,
+		PlayerRepo:       playerRepo,
+		PlayerCardRepo:   playerCardRepo,
+		GameRepo:         gameRepo,
+		GameProgressRepo: gameProgressRepo,
 	})
 
 	gameService := service.NewGameService(
@@ -160,6 +163,11 @@ func (suite *IntegrationTestSuite) TearDownSuite() {
 
 func (suite *IntegrationTestSuite) SetupTest() {
 	suite.tx = suite.db.Begin()
+
+	//Fixme Run db refresh and seeders
+	config.RunRefresh()
+	db := config.NewDatabase()
+	seeders.Run(db)
 }
 
 func (suite *IntegrationTestSuite) TearDownTest() {
