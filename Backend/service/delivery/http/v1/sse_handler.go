@@ -43,7 +43,6 @@ func (stream *Event) listen() {
 		case eventMsg := <-stream.Message:
 			jsonMsg, err := json.Marshal(eventMsg)
 			if err != nil {
-				// 处理错误
 				continue
 			}
 

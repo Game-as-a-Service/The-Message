@@ -42,6 +42,7 @@ func main() {
 	playerService := service.NewPlayerService(&service.PlayerServiceOptions{
 		PlayerRepo:     playerRepo,
 		PlayerCardRepo: playerCardRepo,
+		GameRepo:       gameRepo,
 	})
 
 	gameService := service.NewGameService(
@@ -52,6 +53,7 @@ func main() {
 			DeckService:   deckService,
 		},
 	)
+	playerService.GameServ = &gameService
 
 	http.RegisterGameHandler(
 		&http.GameHandlerOptions{
@@ -76,8 +78,10 @@ func main() {
 
 	http.RegisterPlayerHandler(
 		&http.PlayerHandlerOptions{
-			Engine:  engine,
-			Service: playerService,
+			Engine:      engine,
+			Service:     playerService,
+			GameService: gameService,
+			SSE:         sse,
 		},
 	)
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

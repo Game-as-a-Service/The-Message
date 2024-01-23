@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"github.com/Game-as-a-Service/The-Message/enums"
 	"io"
 	"log"
 	"net/http"
@@ -56,10 +57,15 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		return
 	}
 
+	// TODO 這邊可以優化 https://gorm.io/zh_CN/docs/associations.html
 	if err := g.gameService.PlayerService.InitPlayers(c, game, req); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
+
+	game, _ = g.gameService.GetGameById(c, game.Id)
+	g.gameService.UpdateCurrentPlayer(c, game, game.Players[0].Id)
+	g.gameService.UpdateStatus(c, game, enums.ActionCardStage)
 
 	if err := g.gameService.InitDeck(c, game); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -71,11 +77,16 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		return
 	}
 
+	game, err = g.gameService.GetGameById(c, game.Id)
+	if err != nil {
+		return
+	}
+
 	g.SSE.Message <- gin.H{
-		"message": "Game started",
-		"status":  "started",
-		"gameId":  strconv.Itoa(game.Id),
-		//"game":    game,
+		"message":     "Game started",
+		"status":      "started",
+		"game_id":     game.Id,
+		"next_player": game.Players[0].Id,
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -138,8 +149,21 @@ func (g *GameHandler) GameEvent(c *gin.Context) {
 		return
 	}
 
+	game, err := g.gameService.GetGameById(c, gameId)
+	if err != nil {
+		return
+	}
+
+	g.SSE.Message <- gin.H{
+		"message":        game.Status,
+		"status":         game.Status,
+		"game_id":        gameId,
+		"current_player": game.CurrentPlayerId,
+	}
+
 	c.Stream(func(w io.Writer) bool {
 		if msg, ok := <-clientChan; ok {
+			log.Printf("msg: %+v", msg)
 			data := GameSSERequest{}
 			err := json.Unmarshal([]byte(msg), &data)
 			if err != nil {
@@ -156,7 +180,7 @@ func (g *GameHandler) GameEvent(c *gin.Context) {
 }
 
 type GameSSERequest struct {
-	GameId  int    `json:"gameId,string"`
+	GameId  int    `json:"game_id,int"`
 	Message string `json:"message"`
 	Status  string `json:"status"`
 }

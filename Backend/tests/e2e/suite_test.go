@@ -100,6 +100,7 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 	playerService := service.NewPlayerService(&service.PlayerServiceOptions{
 		PlayerRepo:     playerRepo,
 		PlayerCardRepo: playerCardRepo,
+		GameRepo:       gameRepo,
 	})
 
 	gameService := service.NewGameService(
@@ -110,6 +111,7 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 			DeckService:   deckService,
 		},
 	)
+	playerService.GameServ = &gameService
 
 	v1.RegisterGameHandler(
 		&v1.GameHandlerOptions{
@@ -128,8 +130,10 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 
 	v1.RegisterPlayerHandler(
 		&v1.PlayerHandlerOptions{
-			Engine:  engine,
-			Service: playerService,
+			Engine:      engine,
+			Service:     playerService,
+			GameService: gameService,
+			SSE:         sse,
 		},
 	)
 
@@ -146,7 +150,10 @@ func (suite *IntegrationTestSuite) SetupSuite() {
 
 func (suite *IntegrationTestSuite) TearDownSuite() {
 	sqlDB, _ := suite.db.DB()
-	sqlDB.Close()
+	err := sqlDB.Close()
+	if err != nil {
+		return
+	}
 
 	suite.server.Close()
 }

@@ -1,8 +1,6 @@
 package http
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -52,12 +50,6 @@ func (p *CardHandler) GetPlayerCards(c *gin.Context) {
 			"color": card.Color,
 		}
 		playerCardsInfo = append(playerCardsInfo, dict)
-	}
-	jsonData, err := json.Marshal(playerCardsInfo)
-	fmt.Println(jsonData)
-	if err != nil {
-		fmt.Println("Error encoding JSON:", err)
-		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"player_cards": playerCardsInfo})

@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"context"
-
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"gorm.io/gorm"
 )
@@ -58,4 +57,14 @@ func (g *GameRepository) GetGameWithPlayers(ctx context.Context, id int) (*repos
 		return nil, err
 	}
 	return &game, nil
+}
+
+func (g *GameRepository) UpdateGame(ctx context.Context, game *repository.Game) error {
+	result := g.db.Save(&game)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }
