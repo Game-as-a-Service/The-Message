@@ -33,7 +33,7 @@ func RegisterPlayerHandler(opts *PlayerHandlerOptions) {
 
 	opts.Engine.POST("/api/v1/players/:playerId/player-cards", handler.PlayCard)
 	opts.Engine.POST("/api/v1/player/:playerId/transmit-intelligence", handler.TransmitIntelligence)
-	// opts.Engine.POST("/api/v1/players/:playerId/accept", handler.AcceptCard)
+	opts.Engine.POST("/api/v1/players/:playerId/accept", handler.AcceptCard)
 }
 
 // PlayCard godoc
@@ -121,31 +121,23 @@ func (p *PlayerHandler) TransmitIntelligence(c *gin.Context) {
 		return
 	}
 
-	// TODO to Service
-	p.SSE.Message <- gin.H{
-		"game_id":     game.Id,
-		"status":      game.Status,
-		"message":     fmt.Sprintf("玩家: %d 已出牌", playerId),
-		"card":        card.Name,
-		"next_player": game.CurrentPlayerId,
-	}
-
 	c.JSON(http.StatusOK, gin.H{
 		"result":  ret,
 		"message": enums.ToString(req.IntelligenceType) + " intelligence transmitted",
 	})
 }
 
-// func (p *PlayerHandler) AcceptCard(c *gin.Context) {
-// 	playerId, _ := strconv.Atoi(c.Param("playerId"))
+func (p *PlayerHandler) AcceptCard(c *gin.Context) {
+	playerId, _ := strconv.Atoi(c.Param("playerId"))
 
-// 	result, err := p.playerService.AcceptCard(c, playerId)
-// 	if err != nil {
-// 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-// 		return
-// 	}
+	result, err := p.playerService.AcceptCard(c, playerId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
 
-// 	c.JSON(http.StatusOK, gin.H{
-// 		"message": "success",
-// 	})
-// }
+	c.JSON(http.StatusOK, gin.H{
+		"result":  result,
+		"message": "success",
+	})
+}

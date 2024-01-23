@@ -213,19 +213,20 @@ func (p *PlayerService) TransmitIntelligenceCard(c *gin.Context, playerId int, g
 	return ret, nil
 }
 
-// func (p *PlayerService) AcceptCard(c *gin.Context, playerId int) (bool, error) {
-// 	player, err := p.PlayerRepo.GetPlayer(c, playerId)
-// 	if err != nil {
-// 		return false, err
-// 	}
+func (p *PlayerService) AcceptCard(c *gin.Context, playerId int) (bool, error) {
 
-// 	cards, err := p.PlayerCardRepo.GetPlayerCards(c, &repository.PlayerCard{
-// 		PlayerId: player.Id,
-// 		GameId:   player.GameId,
-// 		Type:     "hand",
-// 	})
-// 	if err != nil {
-// 		return false, err
-// 	}
-// 	return true, nil
-// }
+	// get target player id from game process
+
+	// assume the type is SecretTelegram
+
+	// check if the player is the next player
+
+	// decide whether accpet or not
+
+	//
+	// player, err := p.PlayerRepo.GetPlayer(c, playerId)
+	// if err != nil {
+	// 	return false, err
+	// }
+	return true, nil
+}
