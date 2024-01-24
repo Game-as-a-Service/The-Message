@@ -3,6 +3,7 @@ package mysql
 import (
 	"context"
 	"errors"
+
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"gorm.io/gorm"
 )
@@ -39,7 +40,7 @@ func (p PlayerCardRepository) DeletePlayerCard(ctx context.Context, id int) erro
 	return nil
 }
 
-func (p PlayerCardRepository) (ctx context.Context, playerId int, gameId int, cardId int) (bool, error) {
+func (p PlayerCardRepository) DeletePlayerCardByPlayerIdAndCardId(ctx context.Context, playerId int, gameId int, cardId int) (bool, error) {
 	card := new(repository.PlayerCard)
 
 	result := p.db.Delete(&card, "player_id = ? AND game_id = ? AND card_id = ?", playerId, gameId, cardId)

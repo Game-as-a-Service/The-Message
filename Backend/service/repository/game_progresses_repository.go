@@ -2,8 +2,9 @@ package repository
 
 import (
 	"context"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type GameProgresses struct {
@@ -20,4 +21,5 @@ type GameProgresses struct {
 
 type GameProgressesRepository interface {
 	CreateGameProgress(c context.Context, gameProgress *GameProgresses) (*GameProgresses, error)
+	GetGameProgresses(c context.Context, playerId int, gameId int) (*GameProgresses, error)
 }

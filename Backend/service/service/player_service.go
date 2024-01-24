@@ -210,23 +210,32 @@ func (p *PlayerService) TransmitIntelligenceCard(c *gin.Context, playerId int, g
 		TargetPlayerId: game.CurrentPlayerId,
 	})
 
+	if err != nil {
+		return false, err
+	}
+
 	return ret, nil
 }
 
 func (p *PlayerService) AcceptCard(c *gin.Context, playerId int) (bool, error) {
+	player, err := p.PlayerRepo.GetPlayerWithGamePlayersAndPlayerCardsCard(c, playerId)
+	if err != nil {
+		return false, err
+	}
+
+	result, err := p.CanPlayCard(c, player)
+	if !result || err != nil {
+		return false, err
+	}
 
 	// get target player id from game process
+	gameId := player.Game.Id
+	gameProgress, err := p.GameProgressRepo.GetGameProgresses(c, playerId, gameId)
 
+	cardId := gameProgress.CardId
 	// assume the type is SecretTelegram
-
-	// check if the player is the next player
 
 	// decide whether accpet or not
 
-	//
-	// player, err := p.PlayerRepo.GetPlayer(c, playerId)
-	// if err != nil {
-	// 	return false, err
-	// }
 	return true, nil
 }
