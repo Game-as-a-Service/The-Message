@@ -130,6 +130,97 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/player/{playerId}/transmit-intelligence": {
+            "post": {
+                "description": "Transmit an intelligence card",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "players"
+                ],
+                "summary": "Transmit intelligence",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "playerId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Card ID",
+                        "name": "card_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.PlayCardRequest"
+                        }
+                    },
+                    {
+                        "description": "Intelligence Type",
+                        "name": "intelligence_type",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.PlayCardRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/request.PlayCardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/players/{playerId}/accept": {
+            "post": {
+                "description": "Decide accept card or not",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "players"
+                ],
+                "summary": "Accept Card",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "playerId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Accept",
+                        "name": "accept",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.AcceptCardRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/request.PlayCardResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/players/{playerId}/player-cards": {
             "post": {
                 "description": "Play a card",
@@ -176,15 +267,22 @@ const docTemplate = `{
         "http.GameSSERequest": {
             "type": "object",
             "properties": {
-                "gameId": {
-                    "type": "string",
-                    "example": "0"
+                "game_id": {
+                    "type": "integer"
                 },
                 "message": {
                     "type": "string"
                 },
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "request.AcceptCardRequest": {
+            "type": "object",
+            "properties": {
+                "accept": {
+                    "type": "boolean"
                 }
             }
         },
@@ -214,6 +312,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "card_id": {
+                    "type": "integer"
+                },
+                "intelligence_type": {
                     "type": "integer"
                 }
             }

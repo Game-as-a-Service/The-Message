@@ -217,7 +217,7 @@ func (p *PlayerService) TransmitIntelligenceCard(c *gin.Context, playerId int, g
 	return ret, nil
 }
 
-func (p *PlayerService) AcceptCard(c *gin.Context, playerId int) (bool, error) {
+func (p *PlayerService) AcceptCard(c *gin.Context, playerId int, accept bool) (bool, error) {
 	player, err := p.PlayerRepo.GetPlayerWithGamePlayersAndPlayerCardsCard(c, playerId)
 	if err != nil {
 		return false, err
@@ -228,14 +228,40 @@ func (p *PlayerService) AcceptCard(c *gin.Context, playerId int) (bool, error) {
 		return false, err
 	}
 
-	// get target player id from game process
-	gameId := player.Game.Id
-	gameProgress, err := p.GameProgressRepo.GetGameProgresses(c, playerId, gameId)
+	game, err := p.GameServ.NextPlayer(c, player)
+	if err != nil {
+		return false, err
+	}
 
+	gameId := game.Id
+	gameProgress, err := p.GameProgressRepo.GetGameProgresses(c, playerId, gameId)
+	if err != nil {
+		return false, err
+	}
 	cardId := gameProgress.CardId
 	// assume the type is SecretTelegram
+	res := accept
+	if accept {
+		_, err := p.PlayerCardRepo.CreatePlayerCard(c, &repository.PlayerCard{
+			PlayerId: playerId,
+			GameId:   gameId,
+			CardId:   cardId,
+			Type:     "intelligence",
+		})
+		if err != nil {
+			return false, err
+		}
+	} else {
+		_, err := p.GameProgressRepo.UpdateGameProgress(c, gameProgress, game.CurrentPlayerId)
+		if err != nil {
+			return false, err
+		}
+	}
 
-	// decide whether accpet or not
+	err = p.GameRepo.UpdateGame(c, game)
+	if err != nil {
+		return false, err
+	}
 
-	return true, nil
+	return res, nil
 }

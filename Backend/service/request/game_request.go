@@ -22,3 +22,7 @@ type PlayCardRequest struct {
 	CardID           int `json:"card_id"`
 	IntelligenceType int `json:"intelligence_type"`
 }
+
+type AcceptCardRequest struct {
+	Accept bool `json:"accept"`
+}

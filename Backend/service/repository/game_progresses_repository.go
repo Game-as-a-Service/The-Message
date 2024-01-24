@@ -21,5 +21,6 @@ type GameProgresses struct {
 
 type GameProgressesRepository interface {
 	CreateGameProgress(c context.Context, gameProgress *GameProgresses) (*GameProgresses, error)
-	GetGameProgresses(c context.Context, playerId int, gameId int) (*GameProgresses, error)
+	GetGameProgresses(c context.Context, targetPlayerId int, gameId int) (*GameProgresses, error)
+	UpdateGameProgress(c context.Context, gameProgress *GameProgresses, next_playerId int) (*GameProgresses, error)
 }
