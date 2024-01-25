@@ -153,6 +153,6 @@ func (p *PlayerHandler) AcceptCard(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"result":  result
+		"result": result,
 	})
 }

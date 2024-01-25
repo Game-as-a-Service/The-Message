@@ -251,16 +251,18 @@ func (p *PlayerService) AcceptCard(c *gin.Context, playerId int, accept bool) (b
 		if err != nil {
 			return false, err
 		}
+		p.GameServ.UpdateStatus(c, game, enums.ActionCardStage)
+
 	} else {
 		_, err := p.GameProgressRepo.UpdateGameProgress(c, gameProgress, game.CurrentPlayerId)
 		if err != nil {
 			return false, err
 		}
-	}
 
-	err = p.GameRepo.UpdateGame(c, game)
-	if err != nil {
-		return false, err
+		err = p.GameRepo.UpdateGame(c, game)
+		if err != nil {
+			return false, err
+		}
 	}
 
 	return res, nil
