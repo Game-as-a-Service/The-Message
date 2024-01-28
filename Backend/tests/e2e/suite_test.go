@@ -4,6 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"testing"
+
 	"github.com/Game-as-a-Service/The-Message/config"
 	"github.com/Game-as-a-Service/The-Message/database/seeders"
 	v1 "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
@@ -18,11 +24,6 @@ import (
 	_ "github.com/mattes/migrate/source/file"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"testing"
 )
 
 type IntegrationTestSuite struct {

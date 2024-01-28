@@ -2,12 +2,13 @@ package http
 
 import (
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/request"
 	"github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"strconv"
 )
 
 type PlayerHandler struct {
@@ -32,6 +33,7 @@ func RegisterPlayerHandler(opts *PlayerHandlerOptions) {
 
 	opts.Engine.POST("/api/v1/players/:playerId/player-cards", handler.PlayCard)
 	opts.Engine.POST("/api/v1/player/:playerId/transmit-intelligence", handler.TransmitIntelligence)
+	opts.Engine.POST("/api/v1/players/:playerId/accept", handler.AcceptCard)
 }
 
 // PlayCard godoc
@@ -122,5 +124,35 @@ func (p *PlayerHandler) TransmitIntelligence(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"result":  ret,
 		"message": enums.ToString(req.IntelligenceType) + " intelligence transmitted",
+	})
+}
+
+// AcceptCard godoc
+// @Summary Accept Card
+// @Description Decide accept card or not
+// @Tags players
+// @Accept json
+// @Produce json
+// @Param playerId path int true "Player ID"
+// @Param accept body request.AcceptCardRequest true "Accept"
+// @Success 200 {object} request.PlayCardResponse
+// @Router /api/v1/players/{playerId}/accept [post]
+func (p *PlayerHandler) AcceptCard(c *gin.Context) {
+	playerId, _ := strconv.Atoi(c.Param("playerId"))
+	var req request.AcceptCardRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+
+	result, err := p.playerService.AcceptCard(c, playerId, req.Accept)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"result": result,
 	})
 }

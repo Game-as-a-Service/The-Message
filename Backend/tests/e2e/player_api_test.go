@@ -3,10 +3,6 @@ package e2e
 import (
 	"context"
 	"encoding/json"
-	"github.com/Game-as-a-Service/The-Message/enums"
-	"github.com/Game-as-a-Service/The-Message/service/request"
-	"github.com/bxcodec/faker/v3"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"math"
 	"math/rand"
@@ -14,6 +10,11 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/Game-as-a-Service/The-Message/enums"
+	"github.com/Game-as-a-Service/The-Message/service/request"
+	"github.com/bxcodec/faker/v3"
+	"github.com/stretchr/testify/assert"
 )
 
 func (suite *IntegrationTestSuite) TestPlayCardE2E() {

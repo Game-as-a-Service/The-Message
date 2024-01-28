@@ -2,12 +2,14 @@ package service
 
 import (
 	"context"
+	"math/rand"
+
 	"errors"
+
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"github.com/Game-as-a-Service/The-Message/service/request"
 	"github.com/gin-gonic/gin"
-	"math/rand"
 )
 
 type PlayerService struct {
@@ -208,5 +210,60 @@ func (p *PlayerService) TransmitIntelligenceCard(c *gin.Context, playerId int, g
 		TargetPlayerId: game.CurrentPlayerId,
 	})
 
+	if err != nil {
+		return false, err
+	}
+
 	return ret, nil
+}
+
+func (p *PlayerService) AcceptCard(c *gin.Context, playerId int, accept bool) (bool, error) {
+	player, err := p.PlayerRepo.GetPlayerWithGamePlayersAndPlayerCardsCard(c, playerId)
+	if err != nil {
+		return false, err
+	}
+
+	result, err := p.CanPlayCard(c, player)
+	if !result || err != nil {
+		return false, err
+	}
+
+	game, err := p.GameServ.NextPlayer(c, player)
+	if err != nil {
+		return false, err
+	}
+
+	gameId := game.Id
+	gameProgress, err := p.GameProgressRepo.GetGameProgresses(c, playerId, gameId)
+	if err != nil {
+		return false, err
+	}
+	cardId := gameProgress.CardId
+	// assume the type is SecretTelegram
+	res := accept
+	if accept {
+		_, err := p.PlayerCardRepo.CreatePlayerCard(c, &repository.PlayerCard{
+			PlayerId: playerId,
+			GameId:   gameId,
+			CardId:   cardId,
+			Type:     "intelligence",
+		})
+		if err != nil {
+			return false, err
+		}
+		p.GameServ.UpdateStatus(c, game, enums.ActionCardStage)
+
+	} else {
+		_, err := p.GameProgressRepo.UpdateGameProgress(c, gameProgress, game.CurrentPlayerId)
+		if err != nil {
+			return false, err
+		}
+
+		err = p.GameRepo.UpdateGame(c, game)
+		if err != nil {
+			return false, err
+		}
+	}
+
+	return res, nil
 }
