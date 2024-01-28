@@ -117,7 +117,7 @@ func (p *PlayerHandler) TransmitIntelligence(c *gin.Context) {
 
 	ret, err := p.playerService.TransmitIntelligenceCard(c, playerId, player.GameId, req.CardID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
