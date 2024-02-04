@@ -152,7 +152,18 @@ func (p *PlayerHandler) AcceptCard(c *gin.Context) {
 		return
 	}
 
+	winner, err := p.playerService.CheckWin(c, playerId)
+	if winner != nil {
+		p.SSE.Message <- gin.H{
+			"game_id": winner.Game.Id,
+			"status":  winner.Game.Status,
+			"message": fmt.Sprintf("玩家: %d 已贏得遊戲", playerId),
+			"winner":  winner.Name,
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"result": result,
 	})
+
 }

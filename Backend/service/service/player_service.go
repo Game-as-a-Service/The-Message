@@ -9,7 +9,6 @@ import (
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"github.com/Game-as-a-Service/The-Message/service/request"
-	"github.com/gin-gonic/gin"
 )
 
 type PlayerService struct {
@@ -142,7 +141,7 @@ func (p *PlayerService) GetHandCardId(player *repository.Player, cardId int) (*r
 	return nil, errors.New("找不到手牌")
 }
 
-func (p *PlayerService) PlayCard(c *gin.Context, playerId int, cardId int) (*repository.Game, *repository.Card, error) {
+func (p *PlayerService) PlayCard(c context.Context, playerId int, cardId int) (*repository.Game, *repository.Card, error) {
 	player, err := p.PlayerRepo.GetPlayerWithGamePlayersAndPlayerCardsCard(c, playerId)
 	if err != nil {
 		return nil, nil, err
@@ -176,7 +175,7 @@ func (p *PlayerService) PlayCard(c *gin.Context, playerId int, cardId int) (*rep
 	return game, &handCard.Card, nil
 }
 
-func (p *PlayerService) TransmitIntelligenceCard(c *gin.Context, playerId int, gameId int, cardId int) (bool, error) {
+func (p *PlayerService) TransmitIntelligenceCard(c context.Context, playerId int, gameId int, cardId int) (bool, error) {
 	player, err := p.PlayerRepo.GetPlayerWithGamePlayersAndPlayerCardsCard(c, playerId)
 	if err != nil {
 		return false, err
@@ -217,7 +216,7 @@ func (p *PlayerService) TransmitIntelligenceCard(c *gin.Context, playerId int, g
 	return ret, nil
 }
 
-func (p *PlayerService) AcceptCard(c *gin.Context, playerId int, accept bool) (bool, error) {
+func (p *PlayerService) AcceptCard(c context.Context, playerId int, accept bool) (bool, error) {
 	player, err := p.PlayerRepo.GetPlayerWithGamePlayersAndPlayerCardsCard(c, playerId)
 	if err != nil {
 		return false, err
@@ -266,4 +265,43 @@ func (p *PlayerService) AcceptCard(c *gin.Context, playerId int, accept bool) (b
 	}
 
 	return res, nil
+}
+
+func (p *PlayerService) CheckWin(c context.Context, playerId int) (*repository.Player, error) {
+	player, err := p.PlayerRepo.GetPlayerWithGamePlayersAndPlayerCardsCard(c, playerId)
+	if err != nil {
+		return nil, err
+	}
+
+	win := 0
+	var winPlayer *repository.Player
+	for _, player := range player.Game.Players {
+		win = 0
+		for _, card := range player.PlayerCards {
+			if card.Type == enums.Intelligence && player.IdentityCard == enums.MilitaryAgency && card.Card.Color == enums.Red {
+				win++
+				if win == 3 {
+					winPlayer = &player
+					break
+				}
+			}
+
+			if card.Type == enums.Intelligence && player.IdentityCard == enums.UndercoverFront && card.Card.Color == enums.Blue {
+				win++
+				if win == 3 {
+					winPlayer = &player
+					break
+				}
+			}
+
+			if card.Type == enums.Intelligence && player.IdentityCard == enums.MilitaryAgency && card.Card.Color == enums.Red || card.Card.Color == enums.Blue {
+				win++
+				if win == 5 {
+					winPlayer = &player
+					break
+				}
+			}
+		}
+	}
+	return winPlayer, nil
 }
