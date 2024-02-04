@@ -7,7 +7,6 @@ import (
 
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
-	"github.com/gin-gonic/gin"
 )
 
 type GameService struct {
@@ -134,7 +133,7 @@ func (g *GameService) UpdateCurrentPlayer(c context.Context, game *repository.Ga
 	}
 }
 
-func (g *GameService) NextPlayer(c *gin.Context, player *repository.Player) (*repository.Game, error) {
+func (g *GameService) NextPlayer(c context.Context, player *repository.Player) (*repository.Game, error) {
 	players := player.Game.Players
 
 	currentPlayerId := player.Id

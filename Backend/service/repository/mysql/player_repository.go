@@ -64,7 +64,7 @@ func (p *PlayerRepository) GetPlayerWithGame(ctx context.Context, playerId int) 
 
 func (p *PlayerRepository) GetPlayerWithGamePlayersAndPlayerCardsCard(ctx context.Context, playerId int) (*repository.Player, error) {
 	var player repository.Player
-	if err := p.db.Preload("Game.Players").Preload("PlayerCards.Card").First(&player, playerId).Error; err != nil {
+	if err := p.db.Preload("Game.Players.PlayerCards.Card").Preload("Game.Players.Game").Preload("PlayerCards.Card").First(&player, playerId).Error; err != nil {
 		return nil, err
 	}
 
