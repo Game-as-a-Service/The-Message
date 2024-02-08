@@ -2,17 +2,17 @@ package enums
 
 const (
 	SecretTelegram = 1
-	DIRECT         = 2
-	DOCUMENT       = 3
+	Direct         = 2
+	Document       = 3
 )
 
 func ToString(secretTelegramType int) string {
 	switch secretTelegramType {
 	case SecretTelegram:
 		return "密電"
-	case DIRECT:
+	case Direct:
 		return "直達"
-	case DOCUMENT:
+	case Document:
 		return "文件"
 	default:
 		return ""

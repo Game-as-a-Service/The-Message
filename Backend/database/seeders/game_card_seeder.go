@@ -2,6 +2,7 @@ package seeders
 
 import (
 	"context"
+
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"github.com/Game-as-a-Service/The-Message/service/repository/mysql"
@@ -25,8 +26,9 @@ func SeederCards(db *gorm.DB) {
 		for color, count := range colors {
 			for i := 0; i < count; i++ {
 				mysql.NewCardRepository(db).CreateCard(context.TODO(), &repository.Card{
-					Name:  actionType,
-					Color: color,
+					Name:             actionType,
+					Color:            color,
+					IntelligenceType: enums.ToIntelligenceType(actionType),
 				})
 			}
 		}
