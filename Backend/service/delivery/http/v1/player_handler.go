@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/request"
 	"github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"
@@ -82,7 +81,6 @@ func (p *PlayerHandler) PlayCard(c *gin.Context) {
 // @Produce json
 // @Param playerId path int true "Player ID"
 // @Param card_id body request.PlayCardRequest true "Card ID"
-// @Param intelligence_type body request.PlayCardRequest true "Intelligence Type"
 // @Success 200 {object} request.PlayCardResponse
 // @Router /api/v1/player/{playerId}/transmit-intelligence [post]
 func (p *PlayerHandler) TransmitIntelligence(c *gin.Context) {
@@ -91,13 +89,6 @@ func (p *PlayerHandler) TransmitIntelligence(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-		return
-	}
-
-	intelligenceType := enums.ToString(req.IntelligenceType)
-
-	if intelligenceType == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid intelligence type"})
 		return
 	}
 
@@ -122,8 +113,7 @@ func (p *PlayerHandler) TransmitIntelligence(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"result":  ret,
-		"message": enums.ToString(req.IntelligenceType) + " intelligence transmitted",
+		"result": ret,
 	})
 }
 

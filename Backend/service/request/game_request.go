@@ -19,8 +19,7 @@ type PlayCardResponse struct {
 }
 
 type PlayCardRequest struct {
-	CardID           int `json:"card_id"`
-	IntelligenceType int `json:"intelligence_type"`
+	CardID int `json:"card_id"`
 }
 
 type AcceptCardRequest struct {
