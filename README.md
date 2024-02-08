@@ -5,42 +5,42 @@
 
 - 進入 Backend 資料夾
 ```bash
-cd Backend
+  cd Backend
 ```
 
 - docker 建置出 MySQL 環境
 ```bash
-docker-compose up -d
+  docker-compose up -d
 ```
 
 - 進行 DB 資料表rollback
 ```bash
-go run ./cmd/migrate/rollback.go
+  go run ./cmd/migrate/rollback.go
 ```
 
 - 進行 DB Migration
 ```bash
-go run ./cmd/migrate/migrate.go
+  go run ./cmd/migrate/migrate.go
 ```
 
 - 進行 DB 資料表清空與重新建置
 ```bash
-go run ./cmd/migrate/refresh.go
+  go run ./cmd/migrate/refresh.go
 ```
 
 - 進行 DB Seeder
 ```bash
-go run  ./cmd/migrate/game_card_seeder.go
+  go run  ./cmd/migrate/game_card_seeder.go
 ```
 
 - 自動產生 Swagger API 文件
 ```bash
-swag init -g ./cmd/app/main.go -output ./cmd/app/docs
+  swag init -g ./cmd/app/main.go -output ./cmd/app/docs
 ```
 
 - 開啟 Go Web Server
 ```bash
-go run cmd/app/main.go
+  go run cmd/app/main.go
 ```
 
 - 進行第一個 Request 呼叫
@@ -116,4 +116,41 @@ classDiagram
       + getCardWeight(firstCard : MissionCard, secondCard : MissionCard) : MissionCard[]
       + getCanShowCard(heads : MissionCard[]) : MissionCard[]
     }
+```
+
+## Usage 
+
+### Development
+
+#### Add missing and remove unused modules
+```bash
+  go mod tidy
+```
+
+### Goimports
+
+#### Install
+
+```bash
+  go get golang.org/x/tools/cmd/goimports
+```
+
+#### Run
+
+```bash
+  goimports -l -w . 
+```
+
+### GoLangCI-Lint
+
+#### Install
+
+```bash
+  go get github.com/golangci/golangci-lint/cmd/golangci-lint
+```
+
+#### Run
+
+```bash
+  golangci-lint run ./...
 ```
