@@ -2,12 +2,12 @@ package http
 
 import (
 	"encoding/json"
-	"github.com/Game-as-a-Service/The-Message/enums"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
 
+	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/request"
 	"github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"

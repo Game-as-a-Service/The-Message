@@ -2,9 +2,8 @@ package service
 
 import (
 	"context"
-	"math/rand"
-
 	"errors"
+	"math/rand"
 
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"

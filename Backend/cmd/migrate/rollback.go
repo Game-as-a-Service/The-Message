@@ -4,8 +4,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/Game-as-a-Service/The-Message/config"
 	"net/url"
+
+	"github.com/Game-as-a-Service/The-Message/config"
 )
 
 func main() {

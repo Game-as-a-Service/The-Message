@@ -2,8 +2,9 @@ package http
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"log"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Event struct {
