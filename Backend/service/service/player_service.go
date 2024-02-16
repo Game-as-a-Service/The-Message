@@ -117,7 +117,7 @@ func (p *PlayerService) CreatePlayerCard(c context.Context, card *repository.Pla
 }
 
 func (p *PlayerService) GetPlayerById(c context.Context, id int) (*repository.Player, error) {
-	player, err := p.PlayerRepo.GetPlayer(c, id)
+	player, err := p.PlayerRepo.GetPlayerById(c, id)
 	if err != nil {
 		return nil, err
 	}

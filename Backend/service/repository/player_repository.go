@@ -24,7 +24,7 @@ type Player struct {
 
 type PlayerRepository interface {
 	CreatePlayer(ctx context.Context, player *Player) (*Player, error)
-	GetPlayer(ctx context.Context, playerId int) (*Player, error)
+	GetPlayerById(ctx context.Context, playerId int) (*Player, error)
 	GetPlayersByGameId(ctx context.Context, id int) ([]*Player, error)
 	GetPlayerWithPlayerCards(ctx context.Context, playerId int) (*Player, error)
 	GetPlayerWithGame(ctx context.Context, playerId int) (*Player, error)
