@@ -2,9 +2,10 @@ package service
 
 import (
 	"context"
-	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"math/rand"
 	"time"
+
+	"github.com/Game-as-a-Service/The-Message/service/repository"
 )
 
 type DeckService struct {

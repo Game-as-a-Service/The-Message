@@ -21,7 +21,6 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/joho/godotenv"
 	_ "github.com/joho/godotenv/autoload"
-	_ "github.com/mattes/migrate/source/file"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 )

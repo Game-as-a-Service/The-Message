@@ -3,14 +3,15 @@ package config
 import (
 	"database/sql"
 	"fmt"
+	"net/url"
+	"os"
+	"strings"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/joho/godotenv/autoload"
-	"net/url"
-	"os"
-	"strings"
 )
 
 func NewMigration(dsn string, sourceURL string) (*migrate.Migrate, error) {
