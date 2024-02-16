@@ -8,7 +8,6 @@ require (
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/golang-migrate/migrate/v4 v4.17.0
 	github.com/joho/godotenv v1.5.1
-	github.com/mattes/migrate v3.0.1+incompatible
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
