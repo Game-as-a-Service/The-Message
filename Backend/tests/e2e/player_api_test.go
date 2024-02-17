@@ -13,7 +13,7 @@ import (
 
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/request"
-	"github.com/bxcodec/faker/v3"
+	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -100,33 +100,12 @@ func (suite *IntegrationTestSuite) TestTransmitIntelligenceE2E() {
 	_ = suite.gameServ.InitDeck(context.TODO(), game)
 	_ = suite.gameServ.DrawCardsForAllPlayers(context.TODO(), game)
 
-	suite.T().Run("it can validate intelligence type", func(t *testing.T) {
-		playerId := rand.Intn(playerCount) + 1
-		cardId := rand.Intn(playerCount)
-
-		// Request only card id
-		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
-		req := PlayCardRequest{CardId: cardId}
-		reqBody, _ := json.Marshal(req)
-
-		res := suite.requestJson(url, reqBody, http.MethodPost)
-
-		// Convert response body from json to map
-		resBodyAsByteArray, _ := io.ReadAll(res.Body)
-		resBody := make(map[string]interface{})
-		_ = json.Unmarshal(resBodyAsByteArray, &resBody)
-
-		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
-		assert.Equal(t, "Invalid intelligence type", resBody["message"])
-	})
-
 	suite.T().Run("it can validate card id", func(t *testing.T) {
 		playerId := rand.Intn(playerCount) + 1
-		intelligenceType := rand.Intn(3) + 1
 
 		// Request only intelligence type
 		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
-		req := PlayCardRequest{IntelligenceType: intelligenceType}
+		req := PlayCardRequest{}
 		reqBody, _ := json.Marshal(req)
 
 		res := suite.requestJson(url, reqBody, http.MethodPost)
@@ -143,10 +122,9 @@ func (suite *IntegrationTestSuite) TestTransmitIntelligenceE2E() {
 	suite.T().Run("it can fail when player not found", func(t *testing.T) {
 		playerId := math.MaxInt32
 		cardId := rand.Intn(playerCount)
-		intelligenceType := rand.Intn(3) + 1
 
 		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
-		req := PlayCardRequest{CardId: cardId, IntelligenceType: intelligenceType}
+		req := PlayCardRequest{CardId: cardId}
 		reqBody, _ := json.Marshal(req)
 
 		res := suite.requestJson(url, reqBody, http.MethodPost)
@@ -160,34 +138,12 @@ func (suite *IntegrationTestSuite) TestTransmitIntelligenceE2E() {
 		assert.Equal(t, "Player not found", resBody["message"])
 	})
 
-	suite.T().Run("it can fail when intelligence type is not valid", func(t *testing.T) {
-		playerId := rand.Intn(playerCount) + 1
-		cardId := rand.Intn(playerCount)
-		intelligenceType := math.MaxInt32
-
-		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
-		req := PlayCardRequest{CardId: cardId, IntelligenceType: intelligenceType}
-		reqBody, _ := json.Marshal(req)
-
-		res := suite.requestJson(url, reqBody, http.MethodPost)
-
-		// Convert response body from json to map
-		resBodyAsByteArray, _ := io.ReadAll(res.Body)
-		resBody := make(map[string]interface{})
-		_ = json.Unmarshal(resBodyAsByteArray, &resBody)
-
-		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
-		assert.Equal(t, "Invalid intelligence type", resBody["message"])
-
-	})
-
 	suite.T().Run("it can fail when player card not found", func(t *testing.T) {
 		playerId := rand.Intn(playerCount) + 1
 		cardId := math.MaxInt32
-		intelligenceType := rand.Intn(3) + 1
 
 		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
-		req := PlayCardRequest{CardId: cardId, IntelligenceType: intelligenceType}
+		req := PlayCardRequest{CardId: cardId}
 		reqBody, _ := json.Marshal(req)
 
 		res := suite.requestJson(url, reqBody, http.MethodPost)
@@ -203,7 +159,6 @@ func (suite *IntegrationTestSuite) TestTransmitIntelligenceE2E() {
 
 	suite.T().Run("it can fail when game is end", func(t *testing.T) {
 		playerId := rand.Intn(playerCount) + 1
-		intelligenceType := rand.Intn(3) + 1
 
 		// Get player's card
 		cards, _ := suite.playerRepo.GetPlayerWithPlayerCards(context.TODO(), playerId)
@@ -219,7 +174,7 @@ func (suite *IntegrationTestSuite) TestTransmitIntelligenceE2E() {
 		suite.gameServ.UpdateStatus(context.TODO(), game, enums.GameEnd)
 
 		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
-		req := PlayCardRequest{CardId: cardId, IntelligenceType: intelligenceType}
+		req := PlayCardRequest{CardId: cardId}
 		reqBody, _ := json.Marshal(req)
 
 		res := suite.requestJson(url, reqBody, http.MethodPost)
@@ -238,7 +193,6 @@ func (suite *IntegrationTestSuite) TestTransmitIntelligenceE2E() {
 
 	suite.T().Run("it can fail when not player's turn", func(t *testing.T) {
 		playerId := rand.Intn(playerCount) + 1
-		intelligenceType := rand.Intn(3) + 1
 
 		// Get player's card
 		cards, _ := suite.playerRepo.GetPlayerWithPlayerCards(context.TODO(), playerId)
@@ -251,7 +205,7 @@ func (suite *IntegrationTestSuite) TestTransmitIntelligenceE2E() {
 		suite.gameServ.UpdateCurrentPlayer(context.TODO(), game, playerId-1)
 
 		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
-		req := PlayCardRequest{CardId: cardId, IntelligenceType: intelligenceType}
+		req := PlayCardRequest{CardId: cardId}
 		reqBody, _ := json.Marshal(req)
 
 		res := suite.requestJson(url, reqBody, http.MethodPost)
@@ -265,9 +219,8 @@ func (suite *IntegrationTestSuite) TestTransmitIntelligenceE2E() {
 		assert.Equal(t, "尚未輪到你出牌", resBody["message"])
 	})
 
-	suite.T().Run("it can success when valid card id and intelligence type", func(t *testing.T) {
+	suite.T().Run("it can success when valid card id", func(t *testing.T) {
 		playerId := rand.Intn(playerCount) + 1
-		intelligenceType := rand.Intn(3) + 1
 
 		// Get player's card
 		cards, _ := suite.playerRepo.GetPlayerWithPlayerCards(context.TODO(), playerId)
@@ -280,7 +233,7 @@ func (suite *IntegrationTestSuite) TestTransmitIntelligenceE2E() {
 		suite.gameServ.UpdateCurrentPlayer(context.TODO(), game, playerId)
 
 		url := strings.ReplaceAll(api, "{player_id}", strconv.Itoa(playerId))
-		req := PlayCardRequest{CardId: cardId, IntelligenceType: intelligenceType}
+		req := PlayCardRequest{CardId: cardId}
 		reqBody, _ := json.Marshal(req)
 
 		res := suite.requestJson(url, reqBody, http.MethodPost)
@@ -290,14 +243,11 @@ func (suite *IntegrationTestSuite) TestTransmitIntelligenceE2E() {
 		resBody := make(map[string]interface{})
 		_ = json.Unmarshal(resBodyAsByteArray, &resBody)
 
-		msg := enums.ToString(intelligenceType) + " intelligence transmitted"
 		assert.Equal(t, http.StatusOK, res.StatusCode)
-		assert.Equal(t, msg, resBody["message"])
 		assert.Equal(t, true, resBody["result"])
 	})
 }
 
 type PlayCardRequest struct {
-	CardId           int `json:"card_id"`
-	IntelligenceType int `json:"intelligence_type"`
+	CardId int `json:"card_id"`
 }

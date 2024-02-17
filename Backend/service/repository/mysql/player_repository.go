@@ -22,7 +22,7 @@ func (p *PlayerRepository) CreatePlayer(ctx context.Context, player *repository.
 	return player, err
 }
 
-func (p *PlayerRepository) GetPlayer(ctx context.Context, playerId int) (*repository.Player, error) {
+func (p *PlayerRepository) GetPlayerById(ctx context.Context, playerId int) (*repository.Player, error) {
 	player := new(repository.Player)
 
 	result := p.db.First(&player, "id = ?", playerId)

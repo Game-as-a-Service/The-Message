@@ -2,9 +2,8 @@ package service
 
 import (
 	"context"
-	"math/rand"
-
 	"errors"
+	"math/rand"
 
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
@@ -117,7 +116,7 @@ func (p *PlayerService) CreatePlayerCard(c context.Context, card *repository.Pla
 }
 
 func (p *PlayerService) GetPlayerById(c context.Context, id int) (*repository.Player, error) {
-	player, err := p.PlayerRepo.GetPlayer(c, id)
+	player, err := p.PlayerRepo.GetPlayerById(c, id)
 	if err != nil {
 		return nil, err
 	}

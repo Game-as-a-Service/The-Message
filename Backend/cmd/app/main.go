@@ -3,7 +3,7 @@ package main
 import (
 	_ "github.com/Game-as-a-Service/The-Message/cmd/app/docs"
 	"github.com/Game-as-a-Service/The-Message/config"
-	http "github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
+	"github.com/Game-as-a-Service/The-Message/service/delivery/http/v1"
 	mysqlRepo "github.com/Game-as-a-Service/The-Message/service/repository/mysql"
 	"github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"
