@@ -3,38 +3,53 @@
 
 ## Step to Run in Backend
 
-1. 進入 Backend 資料夾
+- 進入 Backend 資料夾
 ```bash
-cd Backend
+  cd Backend
 ```
 
-2. docker 建置出 MySQL 環境
+- docker 建置出 MySQL 環境
 ```bash
-docker-compose up -d
+  docker-compose up -d
 ```
 
-3. 進行 DB 資料表清空與重新建置
+- 進行 DB 資料表rollback
 ```bash
-go run ./cmd/migrate/fresh.go
+  go run ./cmd/migrate/rollback.go
 ```
 
-4. 進行 DB Migration
+- 進行 DB Migration
 ```bash
-go run ./cmd/migrate/migrate.go
+  go run ./cmd/migrate/migrate.go
 ```
 
-5. 開啟 Go Web Server
+- 進行 DB 資料表清空與重新建置
 ```bash
-go run cmd/app/main.go
+  go run ./cmd/migrate/refresh.go
 ```
 
-6. 進行第一個 Request 呼叫
+- 進行 DB Seeder
+```bash
+  go run  ./cmd/migrate/game_card_seeder.go
+```
+
+- 自動產生 Swagger API 文件
+```bash
+  swag init -g ./cmd/app/main.go -output ./cmd/app/docs
+```
+
+- 開啟 Go Web Server
+```bash
+  go run cmd/app/main.go
+```
+
+- 進行第一個 Request 呼叫
 
  - 有兩種方式可以進行 Request 呼叫，如以下所示：
 
-   1. 將 `The-Message.postman_collection.json` 檔匯入至 Postman 中，並執行 Collection 當中的 API。
+   - 將 `The-Message.postman_collection.json` 檔匯入至 Postman 中，並執行 Collection 當中的 API。
 
-   2. 撰寫一個 HTTP Method 為 POST 的 Request，路徑為 `localhost:8080/api/v1/games`，並帶入以下玩家 JSON 資料。
+   - 撰寫一個 HTTP Method 為 POST 的 Request，路徑為 `localhost:8080/api/v1/games`，並帶入以下玩家 JSON 資料。
   ```json
   {
       "players": [{
@@ -49,6 +64,11 @@ go run cmd/app/main.go
     }]
   }
   ```
+
+查看 API 文件網址：
+```
+http://127.0.0.1:8080/swagger/index.html
+```
 
 ## Class Diagram
 
@@ -96,4 +116,41 @@ classDiagram
       + getCardWeight(firstCard : MissionCard, secondCard : MissionCard) : MissionCard[]
       + getCanShowCard(heads : MissionCard[]) : MissionCard[]
     }
+```
+
+## Usage 
+
+### Development
+
+#### Add missing and remove unused modules
+```bash
+  go mod tidy
+```
+
+### Goimports
+
+#### Install
+
+```bash
+  go get golang.org/x/tools/cmd/goimports
+```
+
+#### Run
+
+```bash
+  goimports -l -w . 
+```
+
+### GoLangCI-Lint
+
+#### Install
+
+```bash
+  go get github.com/golangci/golangci-lint/cmd/golangci-lint
+```
+
+#### Run
+
+```bash
+  golangci-lint run ./...
 ```

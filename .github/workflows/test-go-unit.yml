@@ -11,7 +11,7 @@ on:
       - .github/workflows/test-go-unit.yml
 
 env:
-  GO_VERSION: 1.21
+  GO_VERSION: 1.22
 
 jobs:
   build:
@@ -29,6 +29,13 @@ jobs:
       - name: Env handle
         working-directory: ./Backend
         run: cp env .env
+
+      - name: Install dependencies
+        working-directory: ./Backend
+        run: |
+          go mod tidy
+          go mod download
+          go mod vendor
 
       - name: Build
         working-directory: ./Backend
@@ -61,7 +68,7 @@ jobs:
 
     services:
       mysql:
-        image: mysql:8.1.0
+        image: mysql:8.1
         env:
           MYSQL_ROOT_PASSWORD: ${{ secrets.DB_ROOT_PASSWORD }}
           MYSQL_DATABASE: test
@@ -69,7 +76,7 @@ jobs:
           MYSQL_PASSWORD: ${{ secrets.DB_PASSWORD }}
         ports:
           - "3306:3306"
-    
+
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
@@ -83,9 +90,18 @@ jobs:
         working-directory: ./Backend
         run: cp env .env
 
+      - name: Wait for MySQL
+        run: |
+          wget https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh
+          chmod +x wait-for-it.sh
+          ./wait-for-it.sh 127.0.0.1:3306 --timeout=60
+
       - name: Migration
         working-directory: ./Backend
-        run: go run ./cmd/migrate/migrate.go
+        run: |
+          go run ./cmd/migrate/migrate.go
+          go run ./cmd/migrate/game_card_seeder.go
+
       - name: 🎯 Acceptance test
         working-directory: ./Backend
         run: go test ./... -v -count=1 -coverprofile=coverage.out

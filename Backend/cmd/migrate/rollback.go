@@ -22,12 +22,11 @@ func main() {
 		panic(err)
 	}
 
-	err = m.Up()
+	err = m.Down()
 	if err != nil {
 		if err.Error() == "no change" {
-			fmt.Println("no change")
-			return
+		} else {
+			panic(err)
 		}
-		panic(err)
 	}
 }

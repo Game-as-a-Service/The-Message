@@ -2,28 +2,43 @@ package config
 
 import (
 	"fmt"
+	"log"
+	"net/url"
+	"os"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"log"
-	"os"
 )
 
-func InitDB() *gorm.DB {
-	dbHost := os.Getenv("DB_HOST")
-	dbDatabase := os.Getenv("DB_DATABASE")
-	dbUser := os.Getenv("DB_USER")
-	dbPwd := os.Getenv("DB_PASSWORD")
-	dbPort := os.Getenv("DB_PORT")
+func NewDatabase() *gorm.DB {
+	dsn := DefaultDSN()
 
-	DSN := GetDSN(dbUser, dbPwd, dbHost, dbPort, dbDatabase)
-	db, err := gorm.Open(mysql.Open(DSN), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Cannot connect to database: %v", err)
-		return nil
 	}
+
 	return db
 }
 
-func GetDSN(user string, password string, host string, port string, database string) string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", user, password, host, port, database)
+func DefaultDSN() string {
+	dsn := BaseDSN()
+
+	val := url.Values{}
+	val.Add("parseTime", "true")
+	val.Add("loc", "Local")
+
+	dsn = fmt.Sprintf("%s?%s", dsn, val.Encode())
+	return dsn
+}
+
+func BaseDSN() string {
+	username := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
+	database := os.Getenv("DB_DATABASE")
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", username, password, host, port, database)
+	return dsn
 }
