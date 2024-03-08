@@ -13,7 +13,7 @@ type HeartbeatHandler struct {
 func RegisterHeartbeatHandler(opts *HeartbeatHandler) {
 	handler := &HeartbeatHandler{}
 
-	opts.Engine.GET("/api/v1/heartbeat", handler.Heartbeat)
+	opts.Engine.GET("/api/v1/health", handler.Heartbeat)
 }
 
 // Heartbeat godoc
@@ -23,7 +23,7 @@ func RegisterHeartbeatHandler(opts *HeartbeatHandler) {
 // @Accept json
 // @Produce json
 // @Success 204
-// @Router /api/v1/heartbeat [GET]
+// @Router /api/v1/health [GET]
 func (g *HeartbeatHandler) Heartbeat(c *gin.Context) {
 	c.JSON(http.StatusNoContent, http.NoBody)
 }
