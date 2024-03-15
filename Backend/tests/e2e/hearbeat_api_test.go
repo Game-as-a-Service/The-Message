@@ -15,12 +15,12 @@ func TestHeartbeatEndpoint(t *testing.T) {
 	router := gin.Default()
 
 	// Set up the heartbeat endpoint
-	router.GET("/api/v1/heartbeat", func(c *gin.Context) {
+	router.GET("/api/v1/health", func(c *gin.Context) {
 		c.Status(http.StatusNoContent)
 	})
 
 	// Prepare a new HTTP request
-	req, _ := http.NewRequest("GET", "/api/v1/heartbeat", nil)
+	req, _ := http.NewRequest("GET", "/api/v1/health", nil)
 
 	// Create a response recorder
 	res := httptest.NewRecorder()
