@@ -10,16 +10,17 @@ import (
 type Player struct {
 	gorm.Model
 	Id           int `gorm:"primaryKey;auto_increment"`
+	GameId       uint `gorm:"foreignKey:GameId;references:ID"`
+	UserId       string
 	Name         string
-	GameId       int `gorm:"foreignKey:GameId;references:Id"`
 	IdentityCard string
 	Status       string
-	OrderNumber  int
+	Priority     int
 	PlayerCards  []PlayerCard
-	Game         *Game     `gorm:"foreignKey:GameId;references:Id"`
 	CreatedAt    time.Time `gorm:"autoCreateTime"`
 	UpdatedAt    time.Time `gorm:"autoCreateTime"`
 	DeletedAt    gorm.DeletedAt
+	Game         *Game `gorm:"foreignKey:GameId;references:ID"`
 }
 
 type PlayerRepository interface {

@@ -43,7 +43,7 @@ func (p *PlayerService) InitPlayers(c context.Context, game *repository.Game, re
 			Name:         reqPlayer.Name,
 			GameId:       game.Id,
 			IdentityCard: identityCards[i],
-			OrderNumber:  i + 1,
+			Priority:     i + 1,
 			Status:       enums.PlayerStatusAlive,
 		})
 		if err != nil {
@@ -242,7 +242,6 @@ func (p *PlayerService) AcceptCard(c context.Context, playerId int, accept bool)
 	if accept {
 		_, err := p.PlayerCardRepo.CreatePlayerCard(c, &repository.PlayerCard{
 			PlayerId: playerId,
-			GameId:   gameId,
 			CardId:   cardId,
 			Type:     "intelligence",
 		})

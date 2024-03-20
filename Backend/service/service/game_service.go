@@ -39,7 +39,7 @@ func (g *GameService) InitGame(c context.Context) (*repository.Game, error) {
 	}
 
 	game, err := g.CreateGame(c, &repository.Game{
-		Token:  token,
+		RoomId: roomId,
 		Status: enums.GameStart,
 	})
 	if err != nil {

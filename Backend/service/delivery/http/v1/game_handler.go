@@ -91,7 +91,6 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"Id":    game.Id,
-		"Token": game.Token,
 	})
 }
 
@@ -106,8 +105,7 @@ func (g *GameHandler) GetGame(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"Id":    game.Id,
-		"Token": game.Token,
+		"Id": game.ID,
 	})
 }
 

@@ -13,7 +13,6 @@ type Card struct {
 	Name             string
 	Color            string
 	IntelligenceType int
-	PlayerCards      []PlayerCard
 	CreatedAt        time.Time `gorm:"autoCreateTime"`
 	UpdatedAt        time.Time `gorm:"autoCreateTime"`
 	DeletedAt        gorm.DeletedAt

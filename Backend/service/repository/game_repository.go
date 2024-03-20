@@ -10,13 +10,14 @@ import (
 type Game struct {
 	gorm.Model
 	Id              int `gorm:"primaryKey;auto_increment"`
-	Token           string
+	RoomId          string
 	Status          string
-	CurrentPlayerId int
+	CurrentPlayerId uint
 	Players         []Player
 	CreatedAt       time.Time `gorm:"autoCreateTime"`
 	UpdatedAt       time.Time `gorm:"autoCreateTime"`
 	DeletedAt       gorm.DeletedAt
+	Deck            *Deck
 }
 
 type GameRepository interface {

@@ -9,12 +9,20 @@ import (
 
 type Deck struct {
 	gorm.Model
-	Id        int `gorm:"primaryKey;auto_increment"`
-	GameId    int
-	CardId    int
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoCreateTime"`
 	DeletedAt gorm.DeletedAt
+	GameId uint
+	Cards  []DeckCard
+	Game   Game `gorm:"foreignKey:GameId"`
+}
+
+type DeckCard struct {
+	gorm.Model
+	CardId uint
+	DeckId uint
+	Deck   Deck `gorm:"foreignKey:DeckId"`
+	Card   Card `gorm:"foreignKey:CardId"`
 }
 
 type DeckRepository interface {
