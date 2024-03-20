@@ -85,8 +85,8 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 	g.SSE.Message <- gin.H{
 		"message":     "Game started",
 		"status":      "started",
-		"game_id":     game.Id,
-		"next_player": game.Players[0].Id,
+		"game_id":     game.ID,
+		"next_player": game.Players[0].ID,
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -95,8 +95,14 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 }
 
 func (g *GameHandler) GetGame(c *gin.Context) {
-	gameId, _ := strconv.Atoi(c.Param("gameId"))
+	var req request.GetGameRequest
 
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	gameId := req.GameID
 	game, err := g.gameService.GetGameById(c, gameId)
 
 	if err != nil {
@@ -110,7 +116,14 @@ func (g *GameHandler) GetGame(c *gin.Context) {
 }
 
 func (g *GameHandler) DeleteGame(c *gin.Context) {
-	gameId, _ := strconv.Atoi(c.Param("gameId"))
+	var req request.GetGameRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	gameId := req.GameID
 
 	err := g.gameService.DeleteGame(c, gameId)
 
@@ -132,10 +145,14 @@ func (g *GameHandler) DeleteGame(c *gin.Context) {
 // @Success 200 {object} GameSSERequest
 // @Router /api/v1/games/{gameId}/events [get]
 func (g *GameHandler) GameEvent(c *gin.Context) {
-	gameId, err := strconv.Atoi(c.Param("gameId"))
-	if err != nil {
+	var req request.GetGameRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	gameId := req.GameID
 
 	v, ok := c.Get("clientChan")
 	if !ok {
@@ -178,7 +195,7 @@ func (g *GameHandler) GameEvent(c *gin.Context) {
 }
 
 type GameSSERequest struct {
-	GameId  int    `json:"game_id,int"`
+	GameId  uint   `json:"game_id,int"`
 	Message string `json:"message"`
 	Status  string `json:"status"`
 }

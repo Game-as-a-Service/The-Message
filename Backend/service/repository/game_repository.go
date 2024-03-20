@@ -2,28 +2,24 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"gorm.io/gorm"
 )
 
 type Game struct {
 	gorm.Model
-	Id              int `gorm:"primaryKey;auto_increment"`
 	RoomId          string
 	Status          string
 	CurrentPlayerId uint
 	Players         []Player
-	CreatedAt       time.Time `gorm:"autoCreateTime"`
-	UpdatedAt       time.Time `gorm:"autoCreateTime"`
-	DeletedAt       gorm.DeletedAt
 	Deck            *Deck
 }
 
 type GameRepository interface {
-	GetGameById(ctx context.Context, id int) (*Game, error)
+	GetGameById(ctx context.Context, id uint) (*Game, error)
 	CreateGame(ctx context.Context, game *Game) (*Game, error)
-	DeleteGame(ctx context.Context, id int) error
-	GetGameWithPlayers(ctx context.Context, id int) (*Game, error)
+	DeleteGame(ctx context.Context, id uint) error
+	GetGameWithPlayers(ctx context.Context, id uint) (*Game, error)
 	UpdateGame(ctx context.Context, game *Game) error
+	CreateGameWithPlayers(c context.Context, game *Game) (*Game, error)
 }

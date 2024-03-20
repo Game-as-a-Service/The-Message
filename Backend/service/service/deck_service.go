@@ -66,7 +66,7 @@ func (d *DeckService) CreateDeck(c context.Context, deck *repository.Deck) (*rep
 	return deck, nil
 }
 
-func (d *DeckService) GetDecksByGameId(c context.Context, id int) ([]*repository.Deck, error) {
+func (d *DeckService) GetDecksByGameId(c context.Context, id uint) ([]*repository.Deck, error) {
 	decks, err := d.DeckRepo.GetDecksByGameId(c, id)
 	if err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func (d *DeckService) GetDecksByGameId(c context.Context, id int) ([]*repository
 
 }
 
-func (d *DeckService) DeleteDeckFromGame(c context.Context, id int) error {
+func (d *DeckService) DeleteDeckFromGame(c context.Context, id uint) error {
 	err := d.DeckRepo.DeleteDeck(c, id)
 	if err != nil {
 		return err

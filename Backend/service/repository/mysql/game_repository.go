@@ -17,7 +17,7 @@ func NewGameRepository(db *gorm.DB) *GameRepository {
 	}
 }
 
-func (g *GameRepository) GetGameById(ctx context.Context, id int) (*repository.Game, error) {
+func (g *GameRepository) GetGameById(ctx context.Context, id uint) (*repository.Game, error) {
 	game := new(repository.Game)
 
 	result := g.db.First(&game, "id = ?", id)
@@ -40,7 +40,7 @@ func (g *GameRepository) CreateGame(ctx context.Context, game *repository.Game) 
 	return game, nil
 }
 
-func (g *GameRepository) DeleteGame(ctx context.Context, id int) error {
+func (g *GameRepository) DeleteGame(ctx context.Context, id uint) error {
 	game := new(repository.Game)
 
 	result := g.db.Delete(&game, "id = ?", id)
@@ -52,7 +52,7 @@ func (g *GameRepository) DeleteGame(ctx context.Context, id int) error {
 	return nil
 }
 
-func (g *GameRepository) GetGameWithPlayers(ctx context.Context, id int) (*repository.Game, error) {
+func (g *GameRepository) GetGameWithPlayers(ctx context.Context, id uint) (*repository.Game, error) {
 	var game repository.Game
 	if err := g.db.Preload("Players").First(&game, id).Error; err != nil {
 		return nil, err

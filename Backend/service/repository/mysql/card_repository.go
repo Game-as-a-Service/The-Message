@@ -17,7 +17,7 @@ func NewCardRepository(db *gorm.DB) *CardRepository {
 	}
 }
 
-func (c *CardRepository) GetCardById(ctx context.Context, id int) (*repository.Card, error) {
+func (c *CardRepository) GetCardById(ctx context.Context, id uint) (*repository.Card, error) {
 	card := new(repository.Card)
 
 	result := c.db.First(&card, "id = ?", id)
@@ -61,7 +61,7 @@ func (c *CardRepository) GetPlayerCardsByPlayerId(ctx context.Context, id int, g
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	var cardIDs []int
+	var cardIDs []uint
 	for _, pc := range playerCards {
 		cardIDs = append(cardIDs, pc.CardId)
 	}

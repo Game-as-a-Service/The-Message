@@ -27,7 +27,7 @@ func (d *DeckRepository) CreateDeck(ctx context.Context, deck *repository.Deck) 
 	return deck, nil
 }
 
-func (d *DeckRepository) GetDecksByGameId(ctx context.Context, id int) ([]*repository.Deck, error) {
+func (d *DeckRepository) GetDecksByGameId(ctx context.Context, id uint) ([]*repository.Deck, error) {
 	var decks []*repository.Deck
 
 	result := d.db.Find(&decks, "game_id = ?", id)
@@ -39,7 +39,7 @@ func (d *DeckRepository) GetDecksByGameId(ctx context.Context, id int) ([]*repos
 	return decks, nil
 }
 
-func (d *DeckRepository) DeleteDeck(ctx context.Context, id int) error {
+func (d *DeckRepository) DeleteDeck(ctx context.Context, id uint) error {
 	deck := new(repository.Deck)
 
 	result := d.db.Delete(&deck, "id = ?", id)

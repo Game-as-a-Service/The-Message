@@ -32,14 +32,14 @@ func (suite *IntegrationTestSuite) TestStartGameE2E() {
 	assert.NotNil(suite.T(), responseJson["Id"], "JSON response should contain a 'Id' field")
 
 	// 驗證Game內的玩家都持有identity
-	game, _ := suite.gameRepo.GetGameWithPlayers(context.TODO(), int(responseJson["Id"].(float64)))
+	game, _ := suite.gameRepo.GetGameWithPlayers(context.TODO(), uint(int(responseJson["Id"].(float64))))
 
 	assert.NotEmpty(suite.T(), game.Players[0].IdentityCard)
 	assert.NotEmpty(suite.T(), game.Players[1].IdentityCard)
 	assert.NotEmpty(suite.T(), game.Players[2].IdentityCard)
 
 	for _, player := range game.Players {
-		playerCards, _ := suite.playerRepo.GetPlayerWithPlayerCards(context.TODO(), player.Id)
+		playerCards, _ := suite.playerRepo.GetPlayerWithPlayerCards(context.TODO(), player.ID)
 		assert.NotEmpty(suite.T(), playerCards.PlayerCards)
 	}
 }

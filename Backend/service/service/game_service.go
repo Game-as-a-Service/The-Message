@@ -60,16 +60,15 @@ func (g *GameService) InitDeck(c context.Context, game *repository.Game) error {
 func (g *GameService) DrawCard(c context.Context, game *repository.Game, player *repository.Player, drawCards []*repository.Deck, count int) error {
 	for i := 0; i < count; i++ {
 		card := &repository.PlayerCard{
-			GameId:   game.Id,
-			PlayerId: player.Id,
-			CardId:   drawCards[i].CardId,
+			PlayerId: player.ID,
+			CardId:   drawCards[i].ID,
 			Type:     "hand",
 		}
 		err := g.PlayerService.CreatePlayerCard(c, card)
 		if err != nil {
 			return err
 		}
-		err = g.DeckService.DeleteDeckFromGame(c, drawCards[i].Id)
+		err = g.DeckService.DeleteDeckFromGame(c, drawCards[i].ID)
 		if err != nil {
 			return err
 		}
@@ -78,12 +77,12 @@ func (g *GameService) DrawCard(c context.Context, game *repository.Game, player 
 }
 
 func (g *GameService) DrawCardsForAllPlayers(c context.Context, game *repository.Game) error {
-	players, err := g.PlayerService.GetPlayersByGameId(c, game.Id)
+	players, err := g.PlayerService.GetPlayersByGameId(c, game.ID)
 	if err != nil {
 		return err
 	}
 	for _, player := range players {
-		drawCards, _ := g.DeckService.GetDecksByGameId(c, game.Id)
+		drawCards, _ := g.DeckService.GetDecksByGameId(c, game.ID)
 		err2 := g.DrawCard(c, game, player, drawCards, 3)
 		if err2 != nil {
 			return err2
@@ -109,7 +108,7 @@ func (g *GameService) CreateGame(c context.Context, game *repository.Game) (*rep
 	return game, nil
 }
 
-func (g *GameService) GetGameById(c context.Context, id int) (*repository.Game, error) {
+func (g *GameService) GetGameById(c context.Context, id uint) (*repository.Game, error) {
 	game, err := g.GameRepo.GetGameWithPlayers(c, id)
 	if err != nil {
 		return nil, err
@@ -117,7 +116,7 @@ func (g *GameService) GetGameById(c context.Context, id int) (*repository.Game, 
 	return game, nil
 }
 
-func (g *GameService) DeleteGame(c context.Context, id int) error {
+func (g *GameService) DeleteGame(c context.Context, id uint) error {
 	err := g.GameRepo.DeleteGame(c, id)
 	if err != nil {
 		return err
@@ -125,7 +124,7 @@ func (g *GameService) DeleteGame(c context.Context, id int) error {
 	return nil
 }
 
-func (g *GameService) UpdateCurrentPlayer(c context.Context, game *repository.Game, playerId int) {
+func (g *GameService) UpdateCurrentPlayer(c context.Context, game *repository.Game, playerId uint) {
 	game.CurrentPlayerId = playerId
 	err := g.GameRepo.UpdateGame(c, game)
 	if err != nil {
@@ -136,21 +135,21 @@ func (g *GameService) UpdateCurrentPlayer(c context.Context, game *repository.Ga
 func (g *GameService) NextPlayer(c context.Context, player *repository.Player) (*repository.Game, error) {
 	players := player.Game.Players
 
-	currentPlayerId := player.Id
+	currentPlayerId := player.ID
 
 	var currentPlayerIndex int
 	for index, gPlayer := range players {
-		if gPlayer.Id == currentPlayerId {
+		if gPlayer.ID == currentPlayerId {
 			currentPlayerIndex = index
 			break
 		}
 	}
 
 	if currentPlayerIndex+1 >= len(players) {
-		player.Game.CurrentPlayerId = players[0].Id
+		player.Game.CurrentPlayerId = players[0].ID
 		player.Game.Status = enums.TransmitIntelligenceStage
 	} else {
-		player.Game.CurrentPlayerId = players[currentPlayerIndex+1].Id
+		player.Game.CurrentPlayerId = players[currentPlayerIndex+1].ID
 	}
 	return player.Game, nil
 }

@@ -2,16 +2,12 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"gorm.io/gorm"
 )
 
 type Deck struct {
 	gorm.Model
-	CreatedAt time.Time `gorm:"autoCreateTime"`
-	UpdatedAt time.Time `gorm:"autoCreateTime"`
-	DeletedAt gorm.DeletedAt
 	GameId uint
 	Cards  []DeckCard
 	Game   Game `gorm:"foreignKey:GameId"`
@@ -27,6 +23,6 @@ type DeckCard struct {
 
 type DeckRepository interface {
 	CreateDeck(ctx context.Context, deck *Deck) (*Deck, error)
-	GetDecksByGameId(ctx context.Context, id int) ([]*Deck, error)
-	DeleteDeck(ctx context.Context, id int) error
+	GetDecksByGameId(ctx context.Context, id uint) ([]*Deck, error)
+	DeleteDeck(ctx context.Context, id uint) error
 }

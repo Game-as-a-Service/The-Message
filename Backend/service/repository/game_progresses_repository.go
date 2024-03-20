@@ -2,25 +2,21 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"gorm.io/gorm"
 )
 
 type GameProgresses struct {
-	Id             int `gorm:"primaryKey;auto_increment"`
-	PlayerId       int
-	GameId         int
-	CardId         int
+	gorm.Model
+	PlayerId       uint
+	GameId         uint
+	CardId         uint
 	Action         string
-	TargetPlayerId int
-	CreatedAt      time.Time `gorm:"autoCreateTime"`
-	UpdatedAt      time.Time `gorm:"autoCreateTime"`
-	DeletedAt      gorm.DeletedAt
+	TargetPlayerId uint
 }
 
 type GameProgressesRepository interface {
 	CreateGameProgress(c context.Context, gameProgress *GameProgresses) (*GameProgresses, error)
-	GetGameProgresses(c context.Context, targetPlayerId int, gameId int) (*GameProgresses, error)
-	UpdateGameProgress(c context.Context, gameProgress *GameProgresses, next_playerId int) (*GameProgresses, error)
+	GetGameProgresses(c context.Context, targetPlayerId uint, gameId uint) (*GameProgresses, error)
+	UpdateGameProgress(c context.Context, gameProgress *GameProgresses, nextPlayerId uint) (*GameProgresses, error)
 }
