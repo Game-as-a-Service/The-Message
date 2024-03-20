@@ -8,7 +8,6 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/request"
 	"github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"
@@ -53,34 +52,17 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		return
 	}
 
-	game, err := g.gameService.InitGame(c)
+	cards, err := g.gameService.InitCards(c)
+
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err})
 		return
 	}
 
-	// TODO 這邊可以優化 https://gorm.io/zh_CN/docs/associations.html
-	if err := g.gameService.PlayerService.InitPlayers(c, game, req); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
+	game, err := g.gameService.CreateGameWithPlayers(c, req, cards)
 
-	game, _ = g.gameService.GetGameById(c, game.Id)
-	g.gameService.UpdateCurrentPlayer(c, game, game.Players[0].Id)
-	g.gameService.UpdateStatus(c, game, enums.ActionCardStage)
-
-	if err := g.gameService.InitDeck(c, game); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
-
-	if err := g.gameService.DrawCardsForAllPlayers(c, game); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
-
-	game, err = g.gameService.GetGameById(c, game.Id)
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err})
 		return
 	}
 
@@ -184,7 +166,7 @@ func (g *GameHandler) GameEvent(c *gin.Context) {
 		"message":        game.Status,
 		"status":         game.Status,
 		"game_id":        gameId,
-		"current_player": game.CurrentPlayerId,
+		"current_player": game.CurrentPlayerID,
 	}
 
 	c.Stream(func(w io.Writer) bool {

@@ -41,7 +41,7 @@ func (g *GameProgressRepository) GetGameProgresses(c context.Context, targetPlay
 func (g *GameProgressRepository) UpdateGameProgress(c context.Context, gameProgress *repository.GameProgresses, nextPlayerId uint) (*repository.GameProgresses, error) {
 	result := g.db.First(&gameProgress)
 
-	gameProgress.TargetPlayerId = nextPlayerId
+	gameProgress.TargetPlayerID = nextPlayerId
 	g.db.Save(&gameProgress)
 
 	if result.Error != nil {

@@ -2,11 +2,14 @@ package service
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
+	"errors"
+	"math/rand"
+	"time"
 
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
+	"github.com/Game-as-a-Service/The-Message/service/request"
+	"github.com/gin-gonic/gin"
 )
 
 type GameService struct {
@@ -32,16 +35,12 @@ func NewGameService(opts *GameServiceOptions) GameService {
 	}
 }
 
-func (g *GameService) InitGame(c context.Context) (*repository.Game, error) {
-	token, err := g.GenerateSecureToken(256)
-	if err != nil {
-		return nil, err
-	}
-
+func (g *GameService) InitGame(c context.Context, roomId string) (*repository.Game, error) {
 	game, err := g.CreateGame(c, &repository.Game{
-		RoomId: roomId,
+		RoomID: roomId,
 		Status: enums.GameStart,
 	})
+
 	if err != nil {
 		return nil, err
 	}
@@ -49,19 +48,23 @@ func (g *GameService) InitGame(c context.Context) (*repository.Game, error) {
 	return game, nil
 }
 
-func (g *GameService) InitDeck(c context.Context, game *repository.Game) error {
-	err := g.DeckService.InitDeck(c, game)
+func (g *GameService) InitCards(c context.Context) ([]*repository.Card, error) {
+	cards, err := g.CardService.GetCards(c)
+
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	cards = g.CardService.ShuffleCards(c, cards)
+
+	return cards, nil
 }
 
 func (g *GameService) DrawCard(c context.Context, game *repository.Game, player *repository.Player, drawCards []*repository.Deck, count int) error {
 	for i := 0; i < count; i++ {
 		card := &repository.PlayerCard{
-			PlayerId: player.ID,
-			CardId:   drawCards[i].ID,
+			PlayerID: player.ID,
+			CardID:   drawCards[i].ID,
 			Type:     "hand",
 		}
 		err := g.PlayerService.CreatePlayerCard(c, card)
@@ -72,6 +75,14 @@ func (g *GameService) DrawCard(c context.Context, game *repository.Game, player 
 		if err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func (g *GameService) InitDeck(c context.Context, game *repository.Game) error {
+	err := g.DeckService.InitDeck(c, game)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -90,14 +101,6 @@ func (g *GameService) DrawCardsForAllPlayers(c context.Context, game *repository
 
 	}
 	return nil
-}
-
-func (g *GameService) GenerateSecureToken(n int) (string, error) {
-	bytes := make([]byte, n)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(bytes), nil
 }
 
 func (g *GameService) CreateGame(c context.Context, game *repository.Game) (*repository.Game, error) {
@@ -125,7 +128,7 @@ func (g *GameService) DeleteGame(c context.Context, id uint) error {
 }
 
 func (g *GameService) UpdateCurrentPlayer(c context.Context, game *repository.Game, playerId uint) {
-	game.CurrentPlayerId = playerId
+	game.CurrentPlayerID = playerId
 	err := g.GameRepo.UpdateGame(c, game)
 	if err != nil {
 		panic(err)
@@ -146,10 +149,10 @@ func (g *GameService) NextPlayer(c context.Context, player *repository.Player) (
 	}
 
 	if currentPlayerIndex+1 >= len(players) {
-		player.Game.CurrentPlayerId = players[0].ID
+		player.Game.CurrentPlayerID = players[0].ID
 		player.Game.Status = enums.TransmitIntelligenceStage
 	} else {
-		player.Game.CurrentPlayerId = players[currentPlayerIndex+1].ID
+		player.Game.CurrentPlayerID = players[currentPlayerIndex+1].ID
 	}
 	return player.Game, nil
 }
@@ -160,4 +163,92 @@ func (g *GameService) UpdateStatus(c context.Context, game *repository.Game, sta
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (g *GameService) CreateGameWithPlayers(c *gin.Context, req request.CreateGameRequest, cards []*repository.Card) (*repository.Game, error) {
+	// Get the number of players and assign identity cards
+	length := len(req.Players)
+	identityCards, err := g.AssignIdentityCards(c, length)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the players
+	var players []repository.Player
+	for i, playerReq := range req.Players {
+		player := repository.Player{
+			UserID:       playerReq.ID,
+			Name:         playerReq.Name,
+			Priority:     i,
+			IdentityCard: identityCards[i],
+			Status:       enums.PlayerStatusAlive,
+			PlayerCards:  []repository.PlayerCard{},
+		}
+
+		// Each player gets 3 cards
+		for j := 0; j < 3; j++ {
+			player.PlayerCards = append(player.PlayerCards, repository.PlayerCard{
+				CardID: cards[i*3+j].ID,
+				Type:   "hand",
+			})
+		}
+
+		players = append(players, player)
+	}
+
+	// Remove the player cards and create the deck
+	deck := &repository.Deck{
+		Cards: []repository.DeckCard{},
+	}
+
+	for _, card := range cards[length:] {
+		deck.Cards = append(deck.Cards, repository.DeckCard{
+			CardID: card.ID,
+		})
+	}
+
+	// Create a game and players in one transaction
+	game := &repository.Game{
+		RoomID:  req.RoomID,
+		Players: players,
+		Status:  enums.ActionCardStage,
+		Deck:    deck,
+	}
+
+	game, err = g.GameRepo.CreateGameWithPlayers(c, game)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return game, nil
+}
+
+func (g *GameService) AssignIdentityCards(c context.Context, playCount int) ([]string, error) {
+	var result []string
+
+	if playCount == 3 {
+		result = []string{enums.UndercoverFront, enums.MilitaryAgency, enums.Bystander}
+	} else if playCount == 4 {
+		result = []string{enums.UndercoverFront, enums.MilitaryAgency, enums.Bystander, enums.Bystander}
+	} else if playCount == 5 {
+		result = []string{enums.UndercoverFront, enums.UndercoverFront, enums.MilitaryAgency, enums.MilitaryAgency, enums.Bystander}
+	} else if playCount == 6 {
+		result = []string{enums.UndercoverFront, enums.UndercoverFront, enums.MilitaryAgency, enums.MilitaryAgency, enums.Bystander, enums.Bystander}
+	} else if playCount == 7 {
+		result = []string{enums.UndercoverFront, enums.UndercoverFront, enums.UndercoverFront, enums.MilitaryAgency, enums.MilitaryAgency, enums.MilitaryAgency, enums.Bystander}
+	} else if playCount == 8 {
+		result = []string{enums.UndercoverFront, enums.UndercoverFront, enums.UndercoverFront, enums.MilitaryAgency, enums.MilitaryAgency, enums.MilitaryAgency, enums.Bystander, enums.Bystander}
+	} else if playCount == 9 {
+		result = []string{enums.UndercoverFront, enums.UndercoverFront, enums.UndercoverFront, enums.UndercoverFront, enums.MilitaryAgency, enums.MilitaryAgency, enums.MilitaryAgency, enums.MilitaryAgency, enums.Bystander}
+	} else {
+		return nil, errors.New("invalid play count")
+	}
+
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(result), func(i, j int) {
+		result[i], result[j] = result[j], result[i]
+	})
+	return result, nil
 }

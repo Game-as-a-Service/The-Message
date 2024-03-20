@@ -41,7 +41,7 @@ func (p *PlayerService) InitPlayers(c context.Context, game *repository.Game, re
 	for i, reqPlayer := range req.Players {
 		_, err := p.CreatePlayer(c, &repository.Player{
 			Name:         reqPlayer.Name,
-			GameId:       game.ID,
+			GameID:       game.ID,
 			IdentityCard: identityCards[i],
 			Priority:     i + 1,
 			Status:       enums.PlayerStatusAlive,
@@ -82,7 +82,7 @@ func (p *PlayerService) CanPlayCard(c context.Context, player *repository.Player
 		return false, errors.New("你已死亡")
 	}
 
-	if player.Game.CurrentPlayerId != player.ID {
+	if player.Game.CurrentPlayerID != player.ID {
 		return false, errors.New("尚未輪到你出牌")
 	}
 
@@ -133,7 +133,7 @@ func (p *PlayerService) GetPlayersByGameId(c context.Context, id uint) ([]*repos
 
 func (p *PlayerService) GetHandCardId(player *repository.Player, cardId uint) (*repository.PlayerCard, error) {
 	for _, card := range player.PlayerCards {
-		if card.CardId == cardId && card.Type == "hand" {
+		if card.CardID == cardId && card.Type == "hand" {
 			return &card, nil
 		}
 	}
@@ -201,11 +201,11 @@ func (p *PlayerService) TransmitIntelligenceCard(c context.Context, playerId uin
 	}
 
 	_, err = p.GameProgressRepo.CreateGameProgress(c, &repository.GameProgresses{
-		GameId:         game.ID,
-		PlayerId:       playerId,
-		CardId:         cardId,
+		GameID:         game.ID,
+		PlayerID:       playerId,
+		CardID:         cardId,
 		Action:         enums.TransmitIntelligence,
-		TargetPlayerId: game.CurrentPlayerId,
+		TargetPlayerID: game.CurrentPlayerID,
 	})
 
 	if err != nil {
@@ -236,13 +236,13 @@ func (p *PlayerService) AcceptCard(c context.Context, playerId uint, accept bool
 	if err != nil {
 		return false, err
 	}
-	cardId := gameProgress.CardId
+	cardId := gameProgress.CardID
 	// assume the type is SecretTelegram
 	res := accept
 	if accept {
 		_, err := p.PlayerCardRepo.CreatePlayerCard(c, &repository.PlayerCard{
-			PlayerId: playerId,
-			CardId:   cardId,
+			PlayerID: playerId,
+			CardID:   cardId,
 			Type:     "intelligence",
 		})
 		if err != nil {
@@ -251,7 +251,7 @@ func (p *PlayerService) AcceptCard(c context.Context, playerId uint, accept bool
 		p.GameServ.UpdateStatus(c, game, enums.ActionCardStage)
 
 	} else {
-		_, err := p.GameProgressRepo.UpdateGameProgress(c, gameProgress, game.CurrentPlayerId)
+		_, err := p.GameProgressRepo.UpdateGameProgress(c, gameProgress, game.CurrentPlayerID)
 		if err != nil {
 			return false, err
 		}

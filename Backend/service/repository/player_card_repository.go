@@ -8,11 +8,11 @@ import (
 
 type PlayerCard struct {
 	gorm.Model
-	PlayerId uint
-	CardId   uint
+	PlayerID uint
+	CardID   uint
 	Type     string
-	Card     Card   `gorm:"foreignKey:CardId"`
-	Player   Player `gorm:"foreignKey:PlayerId"`
+	Card     Card   `gorm:"foreignKey:CardID"`
+	Player   Player `gorm:"foreignKey:PlayerID"`
 }
 
 type PlayerCardRepository interface {

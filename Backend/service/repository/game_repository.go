@@ -8,9 +8,9 @@ import (
 
 type Game struct {
 	gorm.Model
-	RoomId          string
+	RoomID          string
 	Status          string
-	CurrentPlayerId uint
+	CurrentPlayerID uint
 	Players         []Player
 	Deck            *Deck
 }

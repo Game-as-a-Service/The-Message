@@ -67,7 +67,7 @@ func (p *PlayerHandler) PlayCard(c *gin.Context) {
 		"status":      game.Status,
 		"message":     fmt.Sprintf("玩家: %d 已出牌", playerId),
 		"card":        card.Name,
-		"next_player": game.CurrentPlayerId,
+		"next_player": game.CurrentPlayerID,
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -104,13 +104,13 @@ func (p *PlayerHandler) TransmitIntelligence(c *gin.Context) {
 	}
 
 	// Check card_id exists in player_cards
-	exist, err := p.playerService.CheckPlayerCardExist(c, playerId, player.GameId, req.CardID)
+	exist, err := p.playerService.CheckPlayerCardExist(c, playerId, player.GameID, req.CardID)
 	if err != nil || !exist {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Card not found"})
 		return
 	}
 
-	ret, err := p.playerService.TransmitIntelligenceCard(c, playerId, player.GameId, req.CardID)
+	ret, err := p.playerService.TransmitIntelligenceCard(c, playerId, player.GameID, req.CardID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return

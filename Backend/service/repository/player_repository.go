@@ -8,14 +8,14 @@ import (
 
 type Player struct {
 	gorm.Model
-	GameId       uint `gorm:"foreignKey:GameId;references:ID"`
-	UserId       string
+	GameID       uint `gorm:"foreignKey:GameID;references:ID"`
+	UserID       string
 	Name         string
 	IdentityCard string
 	Status       string
 	Priority     int
 	PlayerCards  []PlayerCard
-	Game         *Game `gorm:"foreignKey:GameId;references:ID"`
+	Game         *Game `gorm:"foreignKey:GameID;references:ID"`
 }
 
 type PlayerRepository interface {

@@ -52,21 +52,21 @@ func (c *CardRepository) GetCards(ctx context.Context) ([]*repository.Card, erro
 	return cards, nil
 }
 
-func (c *CardRepository) GetPlayerCardsByPlayerId(ctx context.Context, id int, gid int) ([]*repository.Card, error) {
+func (c *CardRepository) GetPlayerCardsByPlayerIdWithGameId(ctx context.Context, playerId uint, gameId uint) ([]*repository.Card, error) {
 
 	var playerCards []*repository.PlayerCard
 	var cards []*repository.Card
-	result := c.db.Find(&playerCards, "player_id = ? AND game_id = ?", id, gid)
+	result := c.db.Find(&playerCards, "player_id = ? AND game_id = ?", playerId, gameId)
 
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	var cardIDs []uint
 	for _, pc := range playerCards {
-		cardIDs = append(cardIDs, pc.CardId)
+		cardIDs = append(cardIDs, pc.CardID)
 	}
 
-	result = c.db.Find(&cards, "id IN ?", cardIDs)
+	result = c.db.Find(&cards, "playerId IN ?", cardIDs)
 	if result.Error != nil {
 		return nil, result.Error
 	}

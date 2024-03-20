@@ -69,3 +69,19 @@ func (g *GameRepository) UpdateGame(ctx context.Context, game *repository.Game) 
 
 	return nil
 }
+
+func (g *GameRepository) CreateGameWithPlayers(c context.Context, game *repository.Game) (*repository.Game, error) {
+	err := g.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&game).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return game, err
+	}
+
+	return game, nil
+}

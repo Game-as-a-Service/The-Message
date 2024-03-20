@@ -8,11 +8,11 @@ import (
 
 type GameProgresses struct {
 	gorm.Model
-	PlayerId       uint
-	GameId         uint
-	CardId         uint
+	PlayerID       uint
+	GameID         uint
+	CardID         uint
 	Action         string
-	TargetPlayerId uint
+	TargetPlayerID uint
 }
 
 type GameProgressesRepository interface {

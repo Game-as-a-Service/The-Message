@@ -8,17 +8,17 @@ import (
 
 type Deck struct {
 	gorm.Model
-	GameId uint
+	GameID uint
 	Cards  []DeckCard
-	Game   Game `gorm:"foreignKey:GameId"`
+	Game   Game `gorm:"foreignKey:GameID"`
 }
 
 type DeckCard struct {
 	gorm.Model
-	CardId uint
-	DeckId uint
-	Deck   Deck `gorm:"foreignKey:DeckId"`
-	Card   Card `gorm:"foreignKey:CardId"`
+	CardID uint
+	DeckID uint
+	Deck   Deck `gorm:"foreignKey:DeckID"`
+	Card   Card `gorm:"foreignKey:CardID"`
 }
 
 type DeckRepository interface {
