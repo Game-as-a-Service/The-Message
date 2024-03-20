@@ -10,8 +10,7 @@ type PlayerInfo struct {
 }
 
 type CreateGameResponse struct {
-	ID    string `json:"id"`
-	Token string `json:"token"`
+	URL string `json:"url"`
 }
 
 type PlayCardResponse struct {

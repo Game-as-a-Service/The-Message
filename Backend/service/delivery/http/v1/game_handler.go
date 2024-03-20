@@ -5,12 +5,14 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/request"
 	"github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 type GameHandler struct {
@@ -89,8 +91,17 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		"next_player": game.Players[0].ID,
 	}
 
+	// Load .env file
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	url := os.Getenv("APP_FRONTEND_URL")
+	version := os.Getenv("APP_VERSION")
+
 	c.JSON(http.StatusOK, gin.H{
-		"Id":    game.Id,
+		"uri": url + version + "/games/" + strconv.Itoa(int(game.ID)),
 	})
 }
 
