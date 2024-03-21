@@ -81,7 +81,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/heartbeat": {
+        "/api/v1/health": {
             "get": {
                 "description": "Check if the server is alive",
                 "consumes": [
@@ -154,15 +154,6 @@ const docTemplate = `{
                     {
                         "description": "Card ID",
                         "name": "card_id",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.PlayCardRequest"
-                        }
-                    },
-                    {
-                        "description": "Intelligence Type",
-                        "name": "intelligence_type",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -288,22 +279,26 @@ const docTemplate = `{
         },
         "request.CreateGameRequest": {
             "type": "object",
+            "required": [
+                "players",
+                "roomId"
+            ],
             "properties": {
                 "players": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/request.PlayerInfo"
                     }
+                },
+                "roomId": {
+                    "type": "string"
                 }
             }
         },
         "request.CreateGameResponse": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "token": {
+                "url": {
                     "type": "string"
                 }
             }
@@ -312,9 +307,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "card_id": {
-                    "type": "integer"
-                },
-                "intelligence_type": {
                     "type": "integer"
                 }
             }
@@ -341,11 +333,15 @@ const docTemplate = `{
         },
         "request.PlayerInfo": {
             "type": "object",
+            "required": [
+                "id",
+                "nickname"
+            ],
             "properties": {
                 "id": {
                     "type": "string"
                 },
-                "name": {
+                "nickname": {
                     "type": "string"
                 }
             }

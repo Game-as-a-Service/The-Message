@@ -11,7 +11,6 @@ import (
 	"github.com/Game-as-a-Service/The-Message/service/request"
 	"github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 type GameHandler struct {
@@ -48,7 +47,13 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 	var req request.CreateGameRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+
+	// Players must be at least 3 and at most 9
+	if len(req.Players) < 3 || len(req.Players) > 9 {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Players must be at least 3 and at most 9"})
 		return
 	}
 
@@ -73,17 +78,11 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 		"next_player": game.Players[0].ID,
 	}
 
-	// Load .env file
-	err = godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
 	url := os.Getenv("APP_FRONTEND_URL")
 	version := os.Getenv("APP_VERSION")
 
 	c.JSON(http.StatusOK, gin.H{
-		"uri": url + version + "/games/" + strconv.Itoa(int(game.ID)),
+		"url": url + version + "/games/" + strconv.Itoa(int(game.ID)),
 	})
 }
 
