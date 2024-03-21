@@ -70,9 +70,7 @@ func (p *PlayerHandler) PlayCard(c *gin.Context) {
 		"next_player": game.CurrentPlayerID,
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"result": true,
-	})
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // TransmitIntelligence godoc
@@ -104,13 +102,13 @@ func (p *PlayerHandler) TransmitIntelligence(c *gin.Context) {
 	}
 
 	// Check card_id exists in player_cards
-	exist, err := p.playerService.CheckPlayerCardExist(c, playerId, player.GameID, req.CardID)
+	exist, err := p.playerService.CheckPlayerCardExist(c, playerId, req.CardID)
 	if err != nil || !exist {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Card not found"})
 		return
 	}
 
-	ret, err := p.playerService.TransmitIntelligenceCard(c, playerId, player.GameID, req.CardID)
+	ret, err := p.playerService.TransmitIntelligenceCard(c, playerId, req.CardID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return

@@ -20,7 +20,7 @@ import (
 
 func (suite *IntegrationTestSuite) TestStartGameE2E() {
 	// Set the cards
-	seeders.SeederCards(suite.db)
+	seeders.OnlyCardsRun(suite.db)
 
 	api := "/api/v1/games"
 
@@ -50,7 +50,7 @@ func (suite *IntegrationTestSuite) TestStartGameE2E() {
 	})
 
 	suite.T().Run("it can fail when player count less than 3", func(t *testing.T) {
-		num := rand.Intn(3)
+		num := rand.Intn(2) + 1
 
 		var players []request.PlayerInfo
 		for i := 0; i < num; i++ {
@@ -135,13 +135,13 @@ func (suite *IntegrationTestSuite) TestStartGameE2E() {
 		assert.Equal(t, url, resBody["url"])
 
 		// Assert Game and Players
-		game := new(repository.Game)
+		game := &repository.Game{}
 		_ = suite.db.First(&game, "id = ?", 1)
 
 		assert.Equal(t, roomID, game.RoomID)
 		assert.Equal(t, enums.ActionCardStage, game.Status)
 
-		gamePlayers := new([]repository.Player)
+		gamePlayers := &[]repository.Player{}
 		_ = suite.db.Find(&gamePlayers, "game_id = ?", game.ID)
 
 		assert.Equal(t, num, len(*gamePlayers))

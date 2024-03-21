@@ -60,7 +60,7 @@ func (g *GameService) InitCards(c context.Context) ([]*repository.Card, error) {
 	return cards, nil
 }
 
-func (g *GameService) DrawCard(c context.Context, game *repository.Game, player *repository.Player, drawCards []*repository.Deck, count int) error {
+func (g *GameService) DrawCard(c context.Context, player *repository.Player, drawCards []*repository.Deck, count int) error {
 	for i := 0; i < count; i++ {
 		card := &repository.PlayerCard{
 			PlayerID: player.ID,
@@ -94,7 +94,7 @@ func (g *GameService) DrawCardsForAllPlayers(c context.Context, game *repository
 	}
 	for _, player := range players {
 		drawCards, _ := g.DeckService.GetDecksByGameId(c, game.ID)
-		err2 := g.DrawCard(c, game, player, drawCards, 3)
+		err2 := g.DrawCard(c, player, drawCards, 3)
 		if err2 != nil {
 			return err2
 		}

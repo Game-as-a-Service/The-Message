@@ -40,10 +40,10 @@ func (p PlayerCardRepository) DeletePlayerCard(ctx context.Context, id uint) err
 	return nil
 }
 
-func (p PlayerCardRepository) DeletePlayerCardByPlayerIdAndCardId(ctx context.Context, playerId uint, gameId uint, cardId uint) (bool, error) {
+func (p PlayerCardRepository) DeletePlayerCardByPlayerIdAndCardId(ctx context.Context, playerId uint, cardId uint) (bool, error) {
 	card := new(repository.PlayerCard)
 
-	result := p.db.Delete(&card, "player_id = ? AND game_id = ? AND card_id = ?", playerId, gameId, cardId)
+	result := p.db.Delete(&card, "player_id = ? AND card_id = ?", playerId, cardId)
 	if result.Error != nil {
 		return false, result.Error
 	}
@@ -51,9 +51,9 @@ func (p PlayerCardRepository) DeletePlayerCardByPlayerIdAndCardId(ctx context.Co
 	return true, nil
 }
 
-func (p *PlayerCardRepository) ExistPlayerCardByPlayerIdAndCardId(ctx context.Context, playerId uint, gameId uint, cardId uint) (bool, error) {
+func (p *PlayerCardRepository) ExistPlayerCardByPlayerIdAndCardId(ctx context.Context, playerId uint, cardId uint) (bool, error) {
 	var card repository.PlayerCard
-	result := p.db.First(&card, "player_id = ? AND game_id = ? AND card_id = ?", playerId, gameId, cardId)
+	result := p.db.First(&card, "player_id = ? AND card_id = ?", playerId, cardId)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return false, nil

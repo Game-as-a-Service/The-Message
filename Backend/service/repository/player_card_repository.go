@@ -20,7 +20,7 @@ type PlayerCardRepository interface {
 	GetPlayerCardsByGameId(ctx context.Context, id uint) ([]*PlayerCard, error)
 	CreatePlayerCard(ctx context.Context, card *PlayerCard) (*PlayerCard, error)
 	DeletePlayerCard(ctx context.Context, id uint) error
-	DeletePlayerCardByPlayerIdAndCardId(ctx context.Context, playerId uint, gameId uint, cardId uint) (bool, error)
-	ExistPlayerCardByPlayerIdAndCardId(ctx context.Context, playerId uint, gameId uint, cardId uint) (bool, error)
+	DeletePlayerCardByPlayerIdAndCardId(ctx context.Context, playerId uint, cardId uint) (bool, error)
+	ExistPlayerCardByPlayerIdAndCardId(ctx context.Context, playerId uint, cardId uint) (bool, error)
 	GetPlayerCards(ctx context.Context, playerCard *PlayerCard) (*[]PlayerCard, error)
 }

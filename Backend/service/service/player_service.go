@@ -89,8 +89,8 @@ func (p *PlayerService) CanPlayCard(c context.Context, player *repository.Player
 	return true, nil
 }
 
-func (p *PlayerService) CheckPlayerCardExist(c context.Context, playerId uint, gameId uint, cardId uint) (bool, error) {
-	exist, err := p.PlayerCardRepo.ExistPlayerCardByPlayerIdAndCardId(c, playerId, gameId, cardId)
+func (p *PlayerService) CheckPlayerCardExist(c context.Context, playerId uint, cardId uint) (bool, error) {
+	exist, err := p.PlayerCardRepo.ExistPlayerCardByPlayerIdAndCardId(c, playerId, cardId)
 
 	if err != nil {
 		return false, err
@@ -174,7 +174,7 @@ func (p *PlayerService) PlayCard(c context.Context, playerId uint, cardId uint) 
 	return game, &handCard.Card, nil
 }
 
-func (p *PlayerService) TransmitIntelligenceCard(c context.Context, playerId uint, gameId uint, cardId uint) (bool, error) {
+func (p *PlayerService) TransmitIntelligenceCard(c context.Context, playerId uint, cardId uint) (bool, error) {
 	player, err := p.PlayerRepo.GetPlayerWithGamePlayersAndPlayerCardsCard(c, playerId)
 	if err != nil {
 		return false, err
@@ -190,7 +190,7 @@ func (p *PlayerService) TransmitIntelligenceCard(c context.Context, playerId uin
 		return false, err
 	}
 
-	ret, err := p.PlayerCardRepo.DeletePlayerCardByPlayerIdAndCardId(c, playerId, gameId, cardId)
+	ret, err := p.PlayerCardRepo.DeletePlayerCardByPlayerIdAndCardId(c, playerId, cardId)
 	if err != nil {
 		return false, err
 	}
