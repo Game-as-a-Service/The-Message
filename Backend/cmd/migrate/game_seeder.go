@@ -10,5 +10,5 @@ import (
 
 func main() {
 	db := config.NewDatabase()
-	seeders.OnlyCardsRun(db)
+	seeders.Run(db)
 }
