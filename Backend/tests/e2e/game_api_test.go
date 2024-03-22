@@ -1,54 +1,149 @@
 package e2e
 
 import (
-	"context"
 	"encoding/json"
+	"io"
+	"math/rand"
 	"net/http"
+	"os"
+	"strconv"
+	"testing"
 
+	"github.com/Game-as-a-Service/The-Message/database/seeders"
+	"github.com/Game-as-a-Service/The-Message/enums"
+	"github.com/Game-as-a-Service/The-Message/service/repository"
+	"github.com/Game-as-a-Service/The-Message/service/request"
+	"github.com/Game-as-a-Service/The-Message/utils"
+	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/assert"
 )
 
 func (suite *IntegrationTestSuite) TestStartGameE2E() {
-	players := []Player{
-		{ID: "6497f6f226b40d440b9a90cc", Name: "A"},
-		{ID: "6498112b26b40d440b9a90ce", Name: "B"},
-		{ID: "6499df157fed0c21a4fd0425", Name: "C"},
-	}
-	requestBody := StartGameRequest{Players: players}
-
-	jsonBody, err := json.Marshal(requestBody)
-	if err != nil {
-		suite.T().Fatalf("Failed to marshal JSON: %v", err)
-	}
+	// Set the cards
+	seeders.OnlyCardsRun(suite.db)
 
 	api := "/api/v1/games"
-	resp := suite.requestJson(api, jsonBody, http.MethodPost)
 
-	assert.Equal(suite.T(), 200, resp.StatusCode)
+	suite.T().Run("it can validate room id and players", func(t *testing.T) {
+		invalidRoomReq := utils.RequestToJsonBody(struct {
+			Players []request.PlayerInfo `json:"players"`
+		}{
+			Players: []request.PlayerInfo{},
+		})
 
-	responseJson := suite.responseJson(resp)
+		invalidPlayerReq := utils.RequestToJsonBody(struct {
+			RoomID string `json:"room_id"`
+		}{
+			RoomID: faker.UUIDDigit(),
+		})
 
-	assert.NotNil(suite.T(), responseJson["Token"], "JSON response should contain a 'Token' field")
-	assert.NotNil(suite.T(), responseJson["Id"], "JSON response should contain a 'Id' field")
+		invalidRoomRes := suite.requestJson(api, invalidRoomReq, http.MethodPost)
+		invalidPlayerRes := suite.requestJson(api, invalidPlayerReq, http.MethodPost)
 
-	// 驗證Game內的玩家都持有identity
-	game, _ := suite.gameRepo.GetGameWithPlayers(context.TODO(), int(responseJson["Id"].(float64)))
+		// Convert response body from json to map
+		resBodyAsByteArray, _ := io.ReadAll(invalidRoomRes.Body)
+		resBody := make(map[string]interface{})
+		_ = json.Unmarshal(resBodyAsByteArray, &resBody)
 
-	assert.NotEmpty(suite.T(), game.Players[0].IdentityCard)
-	assert.NotEmpty(suite.T(), game.Players[1].IdentityCard)
-	assert.NotEmpty(suite.T(), game.Players[2].IdentityCard)
+		assert.Equal(t, http.StatusBadRequest, invalidRoomRes.StatusCode)
+		assert.Equal(t, http.StatusBadRequest, invalidPlayerRes.StatusCode)
+	})
 
-	for _, player := range game.Players {
-		playerCards, _ := suite.playerRepo.GetPlayerWithPlayerCards(context.TODO(), player.Id)
-		assert.NotEmpty(suite.T(), playerCards.PlayerCards)
-	}
-}
+	suite.T().Run("it can fail when player count less than 3", func(t *testing.T) {
+		num := rand.Intn(2) + 1
 
-type Player struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
+		var players []request.PlayerInfo
+		for i := 0; i < num; i++ {
+			player := request.PlayerInfo{
+				ID:   faker.UUIDDigit(),
+				Name: faker.FirstName(),
+			}
+			players = append(players, player)
+		}
 
-type StartGameRequest struct {
-	Players []Player `json:"players"`
+		req := utils.RequestToJsonBody(request.CreateGameRequest{
+			RoomID:  faker.UUIDDigit(),
+			Players: players,
+		})
+
+		res := suite.requestJson(api, req, http.MethodPost)
+
+		// Convert response body from json to map
+		resBody := utils.JsonBodyToMap(res)
+
+		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+		assert.Equal(t, "Players must be at least 3 and at most 9", resBody["message"])
+	})
+
+	suite.T().Run("it can fail when player count more than 9", func(t *testing.T) {
+		num := 10
+
+		var players []request.PlayerInfo
+		for i := 0; i < num; i++ {
+			player := request.PlayerInfo{
+				ID:   faker.UUIDDigit(),
+				Name: faker.FirstName(),
+			}
+			players = append(players, player)
+		}
+
+		req := utils.RequestToJsonBody(request.CreateGameRequest{
+			RoomID:  faker.UUIDDigit(),
+			Players: players,
+		})
+
+		res := suite.requestJson(api, req, http.MethodPost)
+
+		// Convert response body from json to map
+		resBody := utils.JsonBodyToMap(res)
+
+		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+		assert.Equal(t, "Players must be at least 3 and at most 9", resBody["message"])
+	})
+
+	suite.T().Run("it can success when player count between 3 and 9", func(t *testing.T) {
+		// Set up environment variables
+		frontendURL := os.Getenv("APP_FRONTEND_URL")
+		version := os.Getenv("APP_VERSION")
+		suite.T().Setenv("APP_FRONTEND_URL", frontendURL)
+		suite.T().Setenv("APP_VERSION", version)
+
+		num := rand.Intn(7) + 3
+		roomID := faker.UUIDDigit()
+		url := frontendURL + version + "/games/" + strconv.Itoa(1)
+
+		var players []request.PlayerInfo
+		for i := 0; i < num; i++ {
+			player := request.PlayerInfo{
+				ID:   faker.UUIDDigit(),
+				Name: faker.FirstName(),
+			}
+			players = append(players, player)
+		}
+
+		req := utils.RequestToJsonBody(request.CreateGameRequest{
+			RoomID:  roomID,
+			Players: players,
+		})
+
+		res := suite.requestJson(api, req, http.MethodPost)
+
+		// Convert response body from json to map
+		resBody := utils.JsonBodyToMap(res)
+
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		assert.Equal(t, url, resBody["url"])
+
+		// Assert Game and Players
+		game := &repository.Game{}
+		_ = suite.db.First(&game, "id = ?", 1)
+
+		assert.Equal(t, roomID, game.RoomID)
+		assert.Equal(t, enums.ActionCardStage, game.Status)
+
+		gamePlayers := &[]repository.Player{}
+		_ = suite.db.Find(&gamePlayers, "game_id = ?", game.ID)
+
+		assert.Equal(t, num, len(*gamePlayers))
+	})
 }

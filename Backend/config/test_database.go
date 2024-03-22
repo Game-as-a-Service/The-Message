@@ -6,18 +6,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"gorm.io/gorm"
 )
-
-func InitTestDB() *gorm.DB {
-	_, err := LoadEnvPath()
-	if err != nil {
-		return nil
-	}
-
-	db := NewDatabase()
-	return db
-}
 
 func LoadEnvPath() (string, error) {
 	envPath, err := getEnvPath()

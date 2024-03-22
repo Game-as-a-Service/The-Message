@@ -22,7 +22,7 @@ func (p *PlayerRepository) CreatePlayer(ctx context.Context, player *repository.
 	return player, err
 }
 
-func (p *PlayerRepository) GetPlayerById(ctx context.Context, playerId int) (*repository.Player, error) {
+func (p *PlayerRepository) GetPlayerById(ctx context.Context, playerId uint) (*repository.Player, error) {
 	player := new(repository.Player)
 
 	result := p.db.First(&player, "id = ?", playerId)
@@ -34,7 +34,7 @@ func (p *PlayerRepository) GetPlayerById(ctx context.Context, playerId int) (*re
 	return player, nil
 }
 
-func (p *PlayerRepository) GetPlayersByGameId(ctx context.Context, id int) ([]*repository.Player, error) {
+func (p *PlayerRepository) GetPlayersByGameId(ctx context.Context, id uint) ([]*repository.Player, error) {
 	var players []*repository.Player
 
 	result := p.db.Find(&players, "game_id = ?", id)
@@ -46,7 +46,7 @@ func (p *PlayerRepository) GetPlayersByGameId(ctx context.Context, id int) ([]*r
 	return players, nil
 }
 
-func (p *PlayerRepository) GetPlayerWithPlayerCards(ctx context.Context, playerId int) (*repository.Player, error) {
+func (p *PlayerRepository) GetPlayerWithPlayerCards(ctx context.Context, playerId uint) (*repository.Player, error) {
 	var player repository.Player
 	if err := p.db.Preload("PlayerCards").Preload("PlayerCards.Card").First(&player, playerId).Error; err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (p *PlayerRepository) GetPlayerWithPlayerCards(ctx context.Context, playerI
 	return &player, nil
 }
 
-func (p *PlayerRepository) GetPlayerWithGame(ctx context.Context, playerId int) (*repository.Player, error) {
+func (p *PlayerRepository) GetPlayerWithGame(ctx context.Context, playerId uint) (*repository.Player, error) {
 	var player repository.Player
 	if err := p.db.Preload("Game").First(&player, playerId).Error; err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (p *PlayerRepository) GetPlayerWithGame(ctx context.Context, playerId int) 
 	return &player, nil
 }
 
-func (p *PlayerRepository) GetPlayerWithGamePlayersAndPlayerCardsCard(ctx context.Context, playerId int) (*repository.Player, error) {
+func (p *PlayerRepository) GetPlayerWithGamePlayersAndPlayerCardsCard(ctx context.Context, playerId uint) (*repository.Player, error) {
 	var player repository.Player
 	if err := p.db.Preload("Game.Players.PlayerCards.Card").Preload("Game.Players.Game").Preload("PlayerCards.Card").First(&player, playerId).Error; err != nil {
 		return nil, err

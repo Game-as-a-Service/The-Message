@@ -2,12 +2,13 @@ BEGIN;
 
 CREATE TABLE cards
 (
-  id         INT AUTO_INCREMENT PRIMARY KEY,
-  name       VARCHAR(255) NOT NULL,
-  color      VARCHAR(255) NOT NULL,
-  created_at DATETIME     NOT NULL,
-  updated_at DATETIME     NOT NULL,
-  deleted_at DATETIME
+  id                INT AUTO_INCREMENT PRIMARY KEY,
+  name              VARCHAR(255) NOT NULL,
+  color             VARCHAR(255) NOT NULL,
+  intelligence_type TINYINT COMMENT '1 密電, 2 直達, 3 文件',
+  created_at        DATETIME     NOT NULL,
+  updated_at        DATETIME     NOT NULL,
+  deleted_at        DATETIME
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 COMMIT;

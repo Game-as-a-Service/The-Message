@@ -1,17 +1,21 @@
 package request
 
 type CreateGameRequest struct {
-	Players []PlayerInfo `json:"players"`
+	RoomID  string       `json:"roomId" binding:"required"`
+	Players []PlayerInfo `json:"players" binding:"required"`
+}
+
+type GetGameRequest struct {
+	GameID uint `json:"gameId" binding:"required"`
 }
 
 type PlayerInfo struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID   string `json:"id" binding:"required"`
+	Name string `json:"nickname" binding:"required"`
 }
 
 type CreateGameResponse struct {
-	ID    string `json:"id"`
-	Token string `json:"token"`
+	URL string `json:"url"`
 }
 
 type PlayCardResponse struct {
@@ -19,7 +23,7 @@ type PlayCardResponse struct {
 }
 
 type PlayCardRequest struct {
-	CardID int `json:"card_id"`
+	CardID uint `json:"card_id"`
 }
 
 type AcceptCardRequest struct {

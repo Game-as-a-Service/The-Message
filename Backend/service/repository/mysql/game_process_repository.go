@@ -27,7 +27,7 @@ func (g *GameProgressRepository) CreateGameProgress(c context.Context, gameProgr
 	return gameProgress, nil
 }
 
-func (g *GameProgressRepository) GetGameProgresses(c context.Context, targetPlayerId int, gameId int) (*repository.GameProgresses, error) {
+func (g *GameProgressRepository) GetGameProgresses(c context.Context, targetPlayerId uint, gameId uint) (*repository.GameProgresses, error) {
 	var gameProgress *repository.GameProgresses
 
 	result := g.db.First(&gameProgress, "target_player_id = ? AND game_id = ?", targetPlayerId, gameId)
@@ -38,11 +38,10 @@ func (g *GameProgressRepository) GetGameProgresses(c context.Context, targetPlay
 	return gameProgress, nil
 }
 
-func (g *GameProgressRepository) UpdateGameProgress(c context.Context, gameProgress *repository.GameProgresses, next_playerId int) (*repository.GameProgresses, error) {
-	// result := g.db.Update(&gameProgress)
+func (g *GameProgressRepository) UpdateGameProgress(c context.Context, gameProgress *repository.GameProgresses, nextPlayerId uint) (*repository.GameProgresses, error) {
 	result := g.db.First(&gameProgress)
 
-	gameProgress.TargetPlayerId = next_playerId
+	gameProgress.TargetPlayerID = nextPlayerId
 	g.db.Save(&gameProgress)
 
 	if result.Error != nil {

@@ -34,18 +34,20 @@ func RegisterCardHandler(opts *CardHandlerOptions) {
 // @Success 200 {object} request.PlayerCardsResponse
 // @Router /api/v1/player/{id}/player-cards/ [get]
 func (p *CardHandler) GetPlayerCards(c *gin.Context) {
-	playerId, _ := strconv.Atoi(c.Param("playerId"))
+	reqPlayerId, _ := strconv.Atoi(c.Param("playerId"))
+	playerId := uint(reqPlayerId)
+
 	playerCards, err := p.cardService.GetPlayerCardsByPlayerId(c, playerId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
-	playerCardsInfo := []map[string]interface{}{}
+	var playerCardsInfo []map[string]interface{}
 
 	for _, card := range playerCards {
 		dict := map[string]interface{}{
-			"id":    card.Id,
+			"id":    card.ID,
 			"name":  card.Name,
 			"color": card.Color,
 		}

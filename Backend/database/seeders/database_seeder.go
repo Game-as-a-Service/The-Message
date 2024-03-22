@@ -6,4 +6,9 @@ import (
 
 func Run(db *gorm.DB) {
 	SeederCards(db)
+	SeederGameWithPlayers(db)
+}
+
+func OnlyCardsRun(db *gorm.DB) {
+	SeederCards(db)
 }
