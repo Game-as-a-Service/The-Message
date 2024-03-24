@@ -2,11 +2,12 @@ package service
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/hex"
-
+	"errors"
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
+	"log"
+	"math/rand"
 )
 
 type GameService struct {
@@ -47,6 +48,58 @@ func (g *GameService) InitGame(c context.Context) (*repository.Game, error) {
 	}
 
 	return game, nil
+}
+
+func (g *GameService) AssignIdentityCards(c context.Context, playCount int) ([]string, error) {
+
+	if playCount < 3 || playCount > 9 {
+		return nil, errors.New("player count must be between 3 and 9")
+	}
+
+	var result []string
+
+	if playCount <= 6 {
+		y := playCount / 3
+		for i := 0; i < y; i++ {
+			result = append(result, enums.UndercoverFront)
+			result = append(result, enums.MilitaryAgency)
+			result = append(result, enums.Bystander)
+		}
+
+		x := playCount % 3
+		if x == 1 {
+			result = append(result, enums.Bystander)
+		} else if x == 2 {
+			result = append(result, enums.UndercoverFront)
+			result = append(result, enums.MilitaryAgency)
+		}
+
+	} else if playCount > 6 {
+		y := 3
+		for i := 0; i < y; i++ {
+			result = append(result, enums.UndercoverFront)
+			result = append(result, enums.MilitaryAgency)
+		}
+		x := playCount % 3
+		if x == 0 {
+			x = 3
+		}
+		for i := 0; i < x; i++ {
+			result = append(result, enums.Bystander)
+		}
+	}
+
+	log.Printf("result: %+v", result)
+	log.Printf("count: %+v", len(result))
+
+	// 創建一個新的隨機數生成器實例
+	//src := rand.NewSource(time.Now().UnixNano())
+	//r := rand.New(src)
+
+	// 使用創建的隨機數生成器實例來執行洗牌
+	//r.Shuffle(len(result), func(i, j int) { result[i], result[j] = result[j], result[i] })
+
+	return result, nil
 }
 
 func (g *GameService) InitDeck(c context.Context, game *repository.Game) error {
