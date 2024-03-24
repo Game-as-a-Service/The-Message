@@ -4,8 +4,9 @@ CREATE TABLE players
 (
   id            INT AUTO_INCREMENT PRIMARY KEY,
   game_id       INT          NOT NULL,
+  user_id       VARCHAR(255) NOT NULL,
   name          VARCHAR(255) NOT NULL,
-  order_number  INT          NOT NULL,
+  priority      TINYINT      NOT NULL,
   identity_card VARCHAR(255) NOT NULL,
   status        VARCHAR(10)  NOT NULL,
   created_at    DATETIME     NOT NULL,

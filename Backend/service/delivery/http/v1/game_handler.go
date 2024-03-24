@@ -5,9 +5,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
-	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/request"
 	"github.com/Game-as-a-Service/The-Message/service/service"
 	"github.com/gin-gonic/gin"
@@ -47,57 +47,54 @@ func (g *GameHandler) StartGame(c *gin.Context) {
 	var req request.CreateGameRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
-	game, err := g.gameService.InitGame(c)
+	// Players must be at least 3 and at most 9
+	if len(req.Players) < 3 || len(req.Players) > 9 {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Players must be at least 3 and at most 9"})
+		return
+	}
+
+	cards, err := g.gameService.InitCards(c)
+
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err})
 		return
 	}
 
-	// TODO 這邊可以優化 https://gorm.io/zh_CN/docs/associations.html
-	if err := g.gameService.PlayerService.InitPlayers(c, game, req); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
+	game, err := g.gameService.CreateGameWithPlayers(c, req, cards)
 
-	game, _ = g.gameService.GetGameById(c, game.Id)
-	g.gameService.UpdateCurrentPlayer(c, game, game.Players[0].Id)
-	g.gameService.UpdateStatus(c, game, enums.ActionCardStage)
-
-	if err := g.gameService.InitDeck(c, game); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
-
-	if err := g.gameService.DrawCardsForAllPlayers(c, game); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
-
-	game, err = g.gameService.GetGameById(c, game.Id)
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err})
 		return
 	}
 
 	g.SSE.Message <- gin.H{
 		"message":     "Game started",
 		"status":      "started",
-		"game_id":     game.Id,
-		"next_player": game.Players[0].Id,
+		"game_id":     game.ID,
+		"next_player": game.Players[0].ID,
 	}
 
+	url := os.Getenv("APP_FRONTEND_URL")
+	version := os.Getenv("APP_VERSION")
+
 	c.JSON(http.StatusOK, gin.H{
-		"Id":    game.Id,
-		"Token": game.Token,
+		"url": url + version + "/games/" + strconv.Itoa(int(game.ID)),
 	})
 }
 
 func (g *GameHandler) GetGame(c *gin.Context) {
-	gameId, _ := strconv.Atoi(c.Param("gameId"))
+	var req request.GetGameRequest
 
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	gameId := req.GameID
 	game, err := g.gameService.GetGameById(c, gameId)
 
 	if err != nil {
@@ -106,13 +103,19 @@ func (g *GameHandler) GetGame(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"Id":    game.Id,
-		"Token": game.Token,
+		"Id": game.ID,
 	})
 }
 
 func (g *GameHandler) DeleteGame(c *gin.Context) {
-	gameId, _ := strconv.Atoi(c.Param("gameId"))
+	var req request.GetGameRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	gameId := req.GameID
 
 	err := g.gameService.DeleteGame(c, gameId)
 
@@ -134,10 +137,14 @@ func (g *GameHandler) DeleteGame(c *gin.Context) {
 // @Success 200 {object} GameSSERequest
 // @Router /api/v1/games/{gameId}/events [get]
 func (g *GameHandler) GameEvent(c *gin.Context) {
-	gameId, err := strconv.Atoi(c.Param("gameId"))
-	if err != nil {
+	var req request.GetGameRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	gameId := req.GameID
 
 	v, ok := c.Get("clientChan")
 	if !ok {
@@ -158,7 +165,7 @@ func (g *GameHandler) GameEvent(c *gin.Context) {
 		"message":        game.Status,
 		"status":         game.Status,
 		"game_id":        gameId,
-		"current_player": game.CurrentPlayerId,
+		"current_player": game.CurrentPlayerID,
 	}
 
 	c.Stream(func(w io.Writer) bool {
@@ -180,7 +187,7 @@ func (g *GameHandler) GameEvent(c *gin.Context) {
 }
 
 type GameSSERequest struct {
-	GameId  int    `json:"game_id,int"`
+	GameId  uint   `json:"game_id,int"`
 	Message string `json:"message"`
 	Status  string `json:"status"`
 }

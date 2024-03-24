@@ -166,7 +166,7 @@ func (suite *IntegrationTestSuite) SetupTest() {
 	//Fixme Run db refresh and seeders
 	config.RunRefresh()
 	db := config.NewDatabase()
-	seeders.Run(db)
+	seeders.OnlyCardsRun(db)
 }
 
 func (suite *IntegrationTestSuite) TearDownTest() {

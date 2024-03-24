@@ -11,13 +11,13 @@ import (
 )
 
 func (suite *IntegrationTestSuite) TestGetPlayerCards() {
-
 	// given
+	ID := uint(1)
 	game := repository.Game{}
 	_, err := suite.gameRepo.CreateGame(context.TODO(), &game)
 	player := repository.Player{
 		Name:         "player1",
-		GameId:       1,
+		GameID:       ID,
 		IdentityCard: "醬油",
 	}
 	_, err = suite.playerRepo.CreatePlayer(context.TODO(), &player)
@@ -26,9 +26,8 @@ func (suite *IntegrationTestSuite) TestGetPlayerCards() {
 	}
 
 	_, err = suite.playerCardRepo.CreatePlayerCard(context.TODO(), &repository.PlayerCard{
-		PlayerId: 1,
-		GameId:   1,
-		CardId:   1,
+		PlayerID: ID,
+		CardID:   ID,
 		Type:     "hand",
 	})
 	if err != nil {

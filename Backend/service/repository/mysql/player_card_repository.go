@@ -28,7 +28,7 @@ func (p PlayerCardRepository) CreatePlayerCard(ctx context.Context, card *reposi
 	return card, nil
 }
 
-func (p PlayerCardRepository) DeletePlayerCard(ctx context.Context, id int) error {
+func (p PlayerCardRepository) DeletePlayerCard(ctx context.Context, id uint) error {
 	card := new(repository.PlayerCard)
 
 	result := p.db.Delete(&card, "id = ?", id)
@@ -40,10 +40,10 @@ func (p PlayerCardRepository) DeletePlayerCard(ctx context.Context, id int) erro
 	return nil
 }
 
-func (p PlayerCardRepository) DeletePlayerCardByPlayerIdAndCardId(ctx context.Context, playerId int, gameId int, cardId int) (bool, error) {
+func (p PlayerCardRepository) DeletePlayerCardByPlayerIdAndCardId(ctx context.Context, playerId uint, cardId uint) (bool, error) {
 	card := new(repository.PlayerCard)
 
-	result := p.db.Delete(&card, "player_id = ? AND game_id = ? AND card_id = ?", playerId, gameId, cardId)
+	result := p.db.Delete(&card, "player_id = ? AND card_id = ?", playerId, cardId)
 	if result.Error != nil {
 		return false, result.Error
 	}
@@ -51,9 +51,9 @@ func (p PlayerCardRepository) DeletePlayerCardByPlayerIdAndCardId(ctx context.Co
 	return true, nil
 }
 
-func (p *PlayerCardRepository) ExistPlayerCardByPlayerIdAndCardId(ctx context.Context, playerId int, gameId int, cardId int) (bool, error) {
+func (p *PlayerCardRepository) ExistPlayerCardByPlayerIdAndCardId(ctx context.Context, playerId uint, cardId uint) (bool, error) {
 	var card repository.PlayerCard
-	result := p.db.First(&card, "player_id = ? AND game_id = ? AND card_id = ?", playerId, gameId, cardId)
+	result := p.db.First(&card, "player_id = ? AND card_id = ?", playerId, cardId)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return false, nil
@@ -63,7 +63,7 @@ func (p *PlayerCardRepository) ExistPlayerCardByPlayerIdAndCardId(ctx context.Co
 	return true, nil
 }
 
-func (p PlayerCardRepository) GetPlayerCardById(ctx context.Context, id int) (*repository.PlayerCard, error) {
+func (p PlayerCardRepository) GetPlayerCardById(ctx context.Context, id uint) (*repository.PlayerCard, error) {
 	card := new(repository.PlayerCard)
 
 	result := p.db.First(&card, "id = ?", id)
@@ -85,7 +85,7 @@ func (p *PlayerCardRepository) GetPlayerCards(ctx context.Context, playerCard *r
 	return playerCards, nil
 }
 
-func (p PlayerCardRepository) GetPlayerCardsByGameId(ctx context.Context, id int) ([]*repository.PlayerCard, error) {
+func (p PlayerCardRepository) GetPlayerCardsByGameId(ctx context.Context, id uint) ([]*repository.PlayerCard, error) {
 	var cards []*repository.PlayerCard
 
 	result := p.db.Find(&cards, "game_id = ?", id)

@@ -46,7 +46,9 @@ func RegisterPlayerHandler(opts *PlayerHandlerOptions) {
 // @Success 200 {object} request.PlayCardResponse
 // @Router /api/v1/players/{playerId}/player-cards [post]
 func (p *PlayerHandler) PlayCard(c *gin.Context) {
-	playerId, _ := strconv.Atoi(c.Param("playerId"))
+	reqPlayerId, _ := strconv.Atoi(c.Param("playerId"))
+	playerId := uint(reqPlayerId)
+
 	var req request.PlayCardRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -61,16 +63,14 @@ func (p *PlayerHandler) PlayCard(c *gin.Context) {
 
 	// TODO to Service
 	p.SSE.Message <- gin.H{
-		"game_id":     game.Id,
+		"game_id":     game.ID,
 		"status":      game.Status,
 		"message":     fmt.Sprintf("玩家: %d 已出牌", playerId),
 		"card":        card.Name,
-		"next_player": game.CurrentPlayerId,
+		"next_player": game.CurrentPlayerID,
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"result": true,
-	})
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // TransmitIntelligence godoc
@@ -84,7 +84,9 @@ func (p *PlayerHandler) PlayCard(c *gin.Context) {
 // @Success 200 {object} request.PlayCardResponse
 // @Router /api/v1/player/{playerId}/transmit-intelligence [post]
 func (p *PlayerHandler) TransmitIntelligence(c *gin.Context) {
-	playerId, _ := strconv.Atoi(c.Param("playerId"))
+	reqPlayerId, _ := strconv.Atoi(c.Param("playerId"))
+	playerId := uint(reqPlayerId)
+
 	var req request.PlayCardRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -100,13 +102,13 @@ func (p *PlayerHandler) TransmitIntelligence(c *gin.Context) {
 	}
 
 	// Check card_id exists in player_cards
-	exist, err := p.playerService.CheckPlayerCardExist(c, playerId, player.GameId, req.CardID)
+	exist, err := p.playerService.CheckPlayerCardExist(c, playerId, req.CardID)
 	if err != nil || !exist {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Card not found"})
 		return
 	}
 
-	ret, err := p.playerService.TransmitIntelligenceCard(c, playerId, player.GameId, req.CardID)
+	ret, err := p.playerService.TransmitIntelligenceCard(c, playerId, req.CardID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
@@ -128,7 +130,9 @@ func (p *PlayerHandler) TransmitIntelligence(c *gin.Context) {
 // @Success 200 {object} request.PlayCardResponse
 // @Router /api/v1/players/{playerId}/accept [post]
 func (p *PlayerHandler) AcceptCard(c *gin.Context) {
-	playerId, _ := strconv.Atoi(c.Param("playerId"))
+	reqPlayerId, _ := strconv.Atoi(c.Param("playerId"))
+	playerId := uint(reqPlayerId)
+
 	var req request.AcceptCardRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -145,7 +149,7 @@ func (p *PlayerHandler) AcceptCard(c *gin.Context) {
 	winner, err := p.playerService.CheckWin(c, playerId)
 	if winner != nil {
 		p.SSE.Message <- gin.H{
-			"game_id": winner.Game.Id,
+			"game_id": winner.Game.ID,
 			"status":  winner.Game.Status,
 			"message": fmt.Sprintf("玩家: %d 已贏得遊戲", playerId),
 			"winner":  winner.Name,

@@ -25,6 +25,31 @@ func NewDeckService(opts *DeckServiceOptions) DeckService {
 	}
 }
 
+func (d *DeckService) CreateDeck(c context.Context, deck *repository.Deck) (*repository.Deck, error) {
+	deck, err := d.DeckRepo.CreateDeck(c, deck)
+	if err != nil {
+		return nil, err
+	}
+	return deck, nil
+}
+
+func (d *DeckService) GetDecksByGameId(c context.Context, id uint) ([]*repository.Deck, error) {
+	decks, err := d.DeckRepo.GetDecksByGameId(c, id)
+	if err != nil {
+		return nil, err
+	}
+	return decks, nil
+
+}
+
+func (d *DeckService) DeleteDeckFromGame(c context.Context, id uint) error {
+	err := d.DeckRepo.DeleteDeck(c, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (d *DeckService) InitDeck(c context.Context, game *repository.Game) error {
 	cards, err := d.CardService.GetCards(c)
 	if err != nil {
@@ -33,17 +58,21 @@ func (d *DeckService) InitDeck(c context.Context, game *repository.Game) error {
 
 	cards = d.ShuffleDeck(cards)
 
-	var deck []*repository.Deck
+	deck := &repository.Deck{
+		GameID: game.ID,
+		Cards:  []repository.DeckCard{},
+	}
 
 	for _, card := range cards {
-		card, err := d.DeckRepo.CreateDeck(c, &repository.Deck{
-			GameId: game.Id,
-			CardId: card.Id,
+		deck.Cards = append(deck.Cards, repository.DeckCard{
+			CardID: card.ID,
 		})
-		if err != nil {
-			return err
-		}
-		deck = append(deck, card)
+	}
+
+	_, err = d.DeckRepo.CreateDeck(c, deck)
+
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -56,29 +85,4 @@ func (d *DeckService) ShuffleDeck(cards []*repository.Card) []*repository.Card {
 		cards[i], cards[j] = cards[j], cards[i]
 	})
 	return cards
-}
-
-func (d *DeckService) CreateDeck(c context.Context, deck *repository.Deck) (*repository.Deck, error) {
-	deck, err := d.DeckRepo.CreateDeck(c, deck)
-	if err != nil {
-		return nil, err
-	}
-	return deck, nil
-}
-
-func (d *DeckService) GetDecksByGameId(c context.Context, id int) ([]*repository.Deck, error) {
-	decks, err := d.DeckRepo.GetDecksByGameId(c, id)
-	if err != nil {
-		return nil, err
-	}
-	return decks, nil
-
-}
-
-func (d *DeckService) DeleteDeckFromGame(c context.Context, id int) error {
-	err := d.DeckRepo.DeleteDeck(c, id)
-	if err != nil {
-		return err
-	}
-	return nil
 }
