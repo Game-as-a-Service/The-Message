@@ -3,13 +3,12 @@ package service
 import (
 	"context"
 	"errors"
-	"math/rand"
-	"time"
-
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"github.com/Game-as-a-Service/The-Message/service/request"
 	"github.com/gin-gonic/gin"
+	"math/rand"
+	"time"
 )
 
 type GameService struct {
@@ -226,29 +225,47 @@ func (g *GameService) CreateGameWithPlayers(c *gin.Context, req request.CreateGa
 }
 
 func (g *GameService) AssignIdentityCards(c context.Context, playCount int) ([]string, error) {
-	var result []string
-
-	if playCount == 3 {
-		result = []string{enums.UndercoverFront, enums.MilitaryAgency, enums.Bystander}
-	} else if playCount == 4 {
-		result = []string{enums.UndercoverFront, enums.MilitaryAgency, enums.Bystander, enums.Bystander}
-	} else if playCount == 5 {
-		result = []string{enums.UndercoverFront, enums.UndercoverFront, enums.MilitaryAgency, enums.MilitaryAgency, enums.Bystander}
-	} else if playCount == 6 {
-		result = []string{enums.UndercoverFront, enums.UndercoverFront, enums.MilitaryAgency, enums.MilitaryAgency, enums.Bystander, enums.Bystander}
-	} else if playCount == 7 {
-		result = []string{enums.UndercoverFront, enums.UndercoverFront, enums.UndercoverFront, enums.MilitaryAgency, enums.MilitaryAgency, enums.MilitaryAgency, enums.Bystander}
-	} else if playCount == 8 {
-		result = []string{enums.UndercoverFront, enums.UndercoverFront, enums.UndercoverFront, enums.MilitaryAgency, enums.MilitaryAgency, enums.MilitaryAgency, enums.Bystander, enums.Bystander}
-	} else if playCount == 9 {
-		result = []string{enums.UndercoverFront, enums.UndercoverFront, enums.UndercoverFront, enums.UndercoverFront, enums.MilitaryAgency, enums.MilitaryAgency, enums.MilitaryAgency, enums.MilitaryAgency, enums.Bystander}
-	} else {
-		return nil, errors.New("invalid play count")
+	if playCount < 3 || playCount > 9 {
+		return nil, errors.New("player count must be between 3 and 9")
 	}
 
-	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(len(result), func(i, j int) {
-		result[i], result[j] = result[j], result[i]
-	})
+	var result []string
+
+	if playCount <= 6 {
+		y := playCount / 3
+		for i := 0; i < y; i++ {
+			result = append(result, enums.UndercoverFront)
+			result = append(result, enums.MilitaryAgency)
+			result = append(result, enums.Bystander)
+		}
+
+		x := playCount % 3
+		if x == 1 {
+			result = append(result, enums.Bystander)
+		} else if x == 2 {
+			result = append(result, enums.UndercoverFront)
+			result = append(result, enums.MilitaryAgency)
+		}
+
+	} else if playCount > 6 {
+		y := 3
+		for i := 0; i < y; i++ {
+			result = append(result, enums.UndercoverFront)
+			result = append(result, enums.MilitaryAgency)
+		}
+		x := playCount % 3
+		if x == 0 {
+			x = 3
+		}
+		for i := 0; i < x; i++ {
+			result = append(result, enums.Bystander)
+		}
+	}
+
+	src := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(src)
+
+	r.Shuffle(len(result), func(i, j int) { result[i], result[j] = result[j], result[i] })
+
 	return result, nil
 }

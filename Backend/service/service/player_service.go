@@ -37,7 +37,11 @@ func NewPlayerService(opts *PlayerServiceOptions) PlayerService {
 }
 
 func (p *PlayerService) InitPlayers(c context.Context, game *repository.Game, req request.CreateGameRequest) error {
-	identityCards := p.InitIdentityCards(len(req.Players))
+	identityCards, err := p.GameServ.AssignIdentityCards(c, len(req.Players))
+	if err != nil {
+		return err
+	}
+
 	for i, reqPlayer := range req.Players {
 		_, err := p.CreatePlayer(c, &repository.Player{
 			Name:         reqPlayer.Name,
