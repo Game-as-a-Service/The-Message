@@ -3,13 +3,12 @@ package service
 import (
 	"context"
 	"errors"
-	"math/rand"
-	"time"
-
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/Game-as-a-Service/The-Message/service/repository"
 	"github.com/Game-as-a-Service/The-Message/service/request"
 	"github.com/gin-gonic/gin"
+	"math/rand"
+	"time"
 )
 
 type GameService struct {

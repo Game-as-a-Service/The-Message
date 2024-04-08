@@ -2,10 +2,9 @@ package service
 
 import (
 	"context"
-	"testing"
-
 	"github.com/Game-as-a-Service/The-Message/enums"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestAssignIdentityCards(t *testing.T) {
